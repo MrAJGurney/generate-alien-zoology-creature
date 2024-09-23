@@ -539,7 +539,6 @@ const addGenesRow = (table, {id, name, description, effect}) => {
 
 const replaceGenesRows = (genes) => {
   const table = document.getElementById("genes-table");
-  Array(table.rows).map((_, i) => i).sort((a,b) => b - a).forEach(i => table.deleteRow(i));
   genes.forEach(gene => addGenesRow(table, gene));
 }
 
@@ -552,7 +551,6 @@ const addActionCardsRow = (table, {id, name, effect}) => {
 
 const replaceActionCardsRows = (actions) => {
   const table = document.getElementById("action-cards-table");
-  Array(table.rows).map((_, i) => i).sort((a,b) => b - a).forEach(i => table.deleteRow(i));
   actions.forEach(action => addActionCardsRow(table, action));
 }
 
@@ -560,6 +558,8 @@ const main = () => {
   const generateNewCreatureButton = document.getElementById('generate-new-creature-button');
   generateNewCreatureButton.addEventListener('click', () => {
     const {genes, actions } = generateCreature();
+
+    document.querySelectorAll("tbody tr").forEach(row => row.remove());
 
     replaceGenesRows(genes);
     replaceActionCardsRows(actions);
