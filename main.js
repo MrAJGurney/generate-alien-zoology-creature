@@ -530,7 +530,7 @@ const generateCreature = () => {
 }
 
 const addGenesRow = (table, {id, name, description, effect}) => {
-  const row = table.insertRow(-1);
+  const row = table.insertRow();
   row.insertCell(0).appendChild(document.createTextNode(id));
   row.insertCell(1).appendChild(document.createTextNode(name));
   row.insertCell(2).appendChild(document.createTextNode(description));
@@ -543,7 +543,7 @@ const replaceGenesRows = (genes) => {
 }
 
 const addActionCardsRow = (table, {id, name, effect}) => {
-  const row = table.insertRow(-1);
+  const row = table.insertRow();
   row.insertCell(0).appendChild(document.createTextNode(id));
   row.insertCell(1).appendChild(document.createTextNode(name));
   row.insertCell(2).appendChild(document.createTextNode(effect));
