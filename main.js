@@ -531,9 +531,8 @@ const generateCreature = () => {
 
 const replaceGenesRows = ({id, name, description, effect}) => {
   const table = document.getElementById("genes-table");
-  const rowCount = table.rows.length;
 
-  rowCount.map((_, i) => i).sort((a,b) => b - a).forEach(i => table.deleteRow(i));
+  table.rows.map((_, i) => i).sort((a,b) => b - a).forEach(i => table.deleteRow(i));
 
   const row = table.insertRow(-1);
   row.insertCell(0).appendChild(document.createTextNode(id));
@@ -544,9 +543,8 @@ const replaceGenesRows = ({id, name, description, effect}) => {
 
 const replaceActionCardsRows = ({id, name, effect}) => {
   const table = document.getElementById("action-cards-table");
-  const rowCount = table.rows.length;
 
-  rowCount.map((_, i) => i).sort((a,b) => b - a).forEach(i => table.deleteRow(i));
+  table.rows.map((_, i) => i).sort((a,b) => b - a).forEach(i => table.deleteRow(i));
 
   const row = table.insertRow(-1);
   row.insertCell(0).appendChild(document.createTextNode(id));
