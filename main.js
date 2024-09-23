@@ -538,7 +538,7 @@ const addGenesRow = (table, {id, name, description, effect}) => {
 }
 
 const replaceGenesRows = (genes) => {
-  const table = document.querySelector("genes-table tbody");
+  const table = document.querySelector("#genes-table tbody");
   genes.forEach(gene => addGenesRow(table, gene));
 }
 
