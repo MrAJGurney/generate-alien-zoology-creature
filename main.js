@@ -530,7 +530,7 @@ const generateCreature = () => {
 }
 
 const replaceGenesRows = ({id, name, description, effect}) => {
-  const table = document.querySelector("genes-table");
+  const table = document.getElementById("genes-table");
   const rowCount = table.rows.length;
 
   rowCount.map((_, i) => i).sort((a,b) => b - a).forEach(i => table.deleteRow(i));
@@ -543,7 +543,7 @@ const replaceGenesRows = ({id, name, description, effect}) => {
 }
 
 const replaceActionCardsRows = ({id, name, effect}) => {
-  const table = document.querySelector("action-cards-table");
+  const table = document.getElementById("action-cards-table");
   const rowCount = table.rows.length;
 
   rowCount.map((_, i) => i).sort((a,b) => b - a).forEach(i => table.deleteRow(i));
