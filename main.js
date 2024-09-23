@@ -490,7 +490,7 @@ const generateCreature = () => {
                     dieRoll = rollD50();
                   } while (diceRolls.includes(dieRoll));
                   diceRolls.push(dieRoll)
-                  return dieRoll;
+                  return diceRolls;
                 }, [])
                 .toSorted((a,b) => a - b)
                 .map(geneId => genesDictionary.find(({id}) => geneId === id));
@@ -503,7 +503,7 @@ const generateCreature = () => {
                         dieRoll = rollD50();
                       } while (diceRolls.includes(dieRoll));
                       diceRolls.push(dieRoll)
-                      return dieRoll;
+                      return diceRolls;
                     }, [])
                     .toSorted((a,b) => a - b)
                     .map(actionId => actionsDictionary.find(({id}) => actionId === id));
