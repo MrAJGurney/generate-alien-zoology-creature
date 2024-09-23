@@ -538,7 +538,7 @@ const addGenesRow = (table, {id, name, description, effect}) => {
 }
 
 const replaceGenesRows = (genes) => {
-  const table = document.getElementById("genes-table");
+  const table = document.querySelector("genes-table tbody");
   genes.forEach(gene => addGenesRow(table, gene));
 }
 
@@ -550,7 +550,7 @@ const addActionCardsRow = (table, {id, name, effect}) => {
 }
 
 const replaceActionCardsRows = (actions) => {
-  const table = document.getElementById("action-cards-table");
+  const table = document.querySelector("#action-cards-table tbody");
   actions.forEach(action => addActionCardsRow(table, action));
 }
 
