@@ -529,11 +529,7 @@ const generateCreature = () => {
   };
 }
 
-const replaceGenesRows = ({id, name, description, effect}) => {
-  const table = document.getElementById("genes-table");
-
-  Array(table.rows).map((_, i) => i).sort((a,b) => b - a).forEach(i => table.deleteRow(i));
-
+const addGenesRow = (table, {id, name, description, effect}) => {
   const row = table.insertRow(-1);
   row.insertCell(0).appendChild(document.createTextNode(id));
   row.insertCell(1).appendChild(document.createTextNode(name));
@@ -541,15 +537,23 @@ const replaceGenesRows = ({id, name, description, effect}) => {
   row.insertCell(3).appendChild(document.createTextNode(effect));
 }
 
-const replaceActionCardsRows = ({id, name, effect}) => {
-  const table = document.getElementById("action-cards-table");
-
+const replaceGenesRows = (table, genes) => {
+  const table = document.getElementById("genes-table");
   Array(table.rows).map((_, i) => i).sort((a,b) => b - a).forEach(i => table.deleteRow(i));
+  genes.forEach(gene => addGenesRow(gene));
+}
 
+const addActionCardsRow = (table, {id, name, effect}) => {
   const row = table.insertRow(-1);
   row.insertCell(0).appendChild(document.createTextNode(id));
   row.insertCell(1).appendChild(document.createTextNode(name));
   row.insertCell(2).appendChild(document.createTextNode(effect));
+}
+
+const replaceActionCardsRows = (actions) => {
+  const table = document.getElementById("action-cards-table");
+  Array(table.rows).map((_, i) => i).sort((a,b) => b - a).forEach(i => table.deleteRow(i));
+  actions.forEach(action => addActionCardsRow(table, action));
 }
 
 const main = () => {
