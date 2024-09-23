@@ -484,25 +484,27 @@ const actionsDictionary = actionsText
 const generateCreature = () => {
   const genes = Array(4)
                 .fill(null)
-                .map(( _a, _b, diceRolls) => {
-                  let diceRoll;
+                .reduce((diceRolls) => {
+                  let dieRoll;
                   do {
-                    diceRoll = rollD50();
-                  } while (diceRolls.includes(diceRoll));
-                  return diceRoll;
-                })
+                    dieRoll = rollD50();
+                  } while (diceRolls.includes(dieRoll));
+                  diceRolls.push(dieRoll)
+                  return dieRoll;
+                }, [])
                 .toSorted((a,b) => a - b)
                 .map(geneId => genesDictionary.find(({id}) => geneId === id));
 
   const actions = Array(5)
                     .fill(null)
-                    .map(( _a, _b, diceRolls) => {
-                      let diceRoll;
+                    .reduce((diceRolls) => {
+                      let dieRoll;
                       do {
-                        diceRoll = rollD50();
-                      } while (diceRolls.includes(diceRoll));
-                      return diceRoll;
-                    })
+                        dieRoll = rollD50();
+                      } while (diceRolls.includes(dieRoll));
+                      diceRolls.push(dieRoll)
+                      return dieRoll;
+                    }, [])
                     .toSorted((a,b) => a - b)
                     .map(actionId => actionsDictionary.find(({id}) => actionId === id));
 
