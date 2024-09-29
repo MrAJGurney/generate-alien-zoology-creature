@@ -1,4 +1,4 @@
-export const CREATURE_ACTIONS = [
+export const CREATURE_ACTION_CARDS = [
     {
         "id": 1,
         "name": "Stupidity",

@@ -1,5 +1,5 @@
 import { CREATURE_GENES } from '../source-files/creature-genes.js'
-import { CREATURE_ACTIONS } from '../source-files/creature-actions.js'
+import { CREATURE_ACTION_CARDS } from '../source-files/creature-action-cards.js'
 import { rollD50 } from '../utilities/roll-dice.js'
 
 const generateCreature = () => {
@@ -27,20 +27,20 @@ const generateCreature = () => {
                       return diceRolls;
                     }, [])
                     .toSorted((a,b) => a - b)
-                    .map(actionId => CREATURE_ACTIONS.find(({id}) => actionId === id));
+                    .map(actionId => CREATURE_ACTION_CARDS.find(({id}) => actionId === id));
 
   genes.forEach(({id: actionId}) => {
     if (actionId == 3 && !actions.find(({id}) => id == 22)) {
-      actions.push(CREATURE_ACTIONS.find(({id}) => id == 22));
+      actions.push(CREATURE_ACTION_CARDS.find(({id}) => id == 22));
     }
     if (actionId == 15 && !actions.find(({id}) => id == 10)) {
-      actions.push(CREATURE_ACTIONS.find(({id}) => id == 10));
+      actions.push(CREATURE_ACTION_CARDS.find(({id}) => id == 10));
     }
     if (actionId == 20 && !actions.find(({id}) => id == 6)) {
-      actions.push(CREATURE_ACTIONS.find(({id}) => id == 6));
+      actions.push(CREATURE_ACTION_CARDS.find(({id}) => id == 6));
     }
     if (actionId == 26 && !actions.find(({id}) => id == 27)) {
-      actions.push(CREATURE_ACTIONS.find(({id}) => id == 27));
+      actions.push(CREATURE_ACTION_CARDS.find(({id}) => id == 27));
     }
 
     actions.sort(({id: a}, {id: b}) => a - b);
