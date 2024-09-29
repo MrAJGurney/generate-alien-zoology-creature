@@ -1,6 +1,8 @@
 import { CREATURE_ACTION_CARDS } from "../source-files/creature-action-cards.js";
 
-const CREATURE_ACTION_CARDS_SOURCE_TABLE_NAME = '7.2 Creatures: Action Cards table';
+const SOURCE_TABLES = {
+    CREATURE_ACTION_CARDS: '7.2 Creatures: Action Cards table'
+};
 
 class CardPrinter {
     constructor({
@@ -29,14 +31,14 @@ class CardPrinter {
 
         this.creatureActionCard.addSingleButton.addEventListener('click', () => {
             const creatureActionCard = CREATURE_ACTION_CARDS.find(({id}) => id.toString() === this.creatureActionCard.addSingleDropdown.value);
-            this.addRow(CREATURE_ACTION_CARDS_SOURCE_TABLE_NAME, creatureActionCard.id, creatureActionCard.name);
+            this.addRow(SOURCE_TABLES.CREATURE_ACTION_CARDS, creatureActionCard.id, creatureActionCard.name);
 
             this.handleRowAdded();
         });
 
         this.creatureActionCard.addAllButton.addEventListener('click', () => {
             CREATURE_ACTION_CARDS.forEach(creatureActionCard => {
-                this.addRow(CREATURE_ACTION_CARDS_SOURCE_TABLE_NAME, creatureActionCard.id, creatureActionCard.name);
+                this.addRow(SOURCE_TABLES.CREATURE_ACTION_CARDS, creatureActionCard.id, creatureActionCard.name);
             });
 
             this.handleRowAdded();
@@ -62,7 +64,7 @@ class CardPrinter {
         const hasCreatureActionCards = this.cardsToPrintTableBody.querySelectorAll('tr').values().some(row => {
             const cells = row.querySelectorAll('td');
             const sourceTableName = cells[0].textContent;
-            return sourceTableName === CREATURE_ACTION_CARDS_SOURCE_TABLE_NAME
+            return sourceTableName === SOURCE_TABLES.CREATURE_ACTION_CARDS
         });
 
         this.creatureActionCard.removeAllButton.disabled = !hasCreatureActionCards;
@@ -77,6 +79,7 @@ class CardPrinter {
             if (aSourceTable !== bSourceTable) {
                 return aSourceTable - bSourceTable
             }
+
             const aCardNumber = parseInt(a.cells[1].textContent);
             const bCardNumber = parseInt(b.cells[1].textContent);
 
