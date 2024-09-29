@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Alien Zoology Card Printer</title>
+        <script type="module" src="../source-files/creature-action-cards.js"></script>
+        <script type="module" src="card-printer.js"></script>
+    </head>
+    <body>
+        <h1>Alien Zoology Card Printer</h1>
+        <h2>Creature Action Cards</h2>
+        <select id="creature-action-card-add-single-dropdown">
+            <option value="" disabled selected>select a creature action card</option>
+        </select>
+        <button id="creature-action-card-add-single-button" disabled>add creature action card</button>
+        <br/>
+        <button id="creature-action-cards-add-all-button">add all creature action cards</button>
+        <button id="creature-action-cards-remove-all-button" disabled>remove all creature action cards</button>
+        <h2>Cards to Print</h2>
+        <table id="cards-to-print-table">
+            <thead>
+                <tr>
+                    <th>Source Table</th>
+                    <th>Card Number</th>
+                    <th>Card Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </body>
+</html>
