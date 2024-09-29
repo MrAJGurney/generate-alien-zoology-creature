@@ -1,4 +1,3 @@
-export const CREATURE_GENES_AND_ACTIONS = `
 Alien Zoology (open beta)
 Author: Florian F. Manthey / @titus_painting 
 full free rules: https://www.wargamevault.com/product/482988/Alien-Zoology-english-Open-Beta?term=alien+zoology
@@ -425,4 +424,3 @@ If a member fails, it suffers -1 HP.
 50. Apparition of God 🎆
 Effect: Requires 3⚡
 Glistening light streams from the creature as if it were being seized by something greater. All figures on the gaming board each heal 2 HP up to the maximum HP defined in their profile.
-`;
