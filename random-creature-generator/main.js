@@ -59,10 +59,10 @@ const storeRandomCreatureInUrl = () => {
                     }, geneActionCardIds)
                     .toSorted((a,b) => a - b);
 
-  saveIdsToUrl([
-    [PARAMS.GENE_IDS, geneIds],
-    [PARAMS.ACTION_IDS, actionIds]
-  ])
+  saveIdsToUrl({
+    [PARAMS.GENE_IDS]: geneIds,
+    [PARAMS.ACTION_IDS]: actionIds
+  });
 }
 
 const addGenesRow = (table, {id, name, description, effect}) => {

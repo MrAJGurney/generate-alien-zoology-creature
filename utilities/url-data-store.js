@@ -28,7 +28,7 @@ export const saveIdsToUrl = (newParams) => {
     const currentUrl = new URL(window.location);
     const currentParams = currentUrl.searchParams;
 
-    newParams.forEach(([paramName, ids]) => currentParams.set(paramName, joinIds(ids)));
+    Object.entries(newParams).forEach(([paramName, ids]) => currentParams.set(paramName, joinIds(ids)));
 
     window.history.pushState(null, '', currentUrl);
 }
