@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Alien Zoology Create & Edit Creature</title>
+        <link rel="shortcut icon" type="image/x-icon" href="../favicon.ico">
+        <script type="module" src="../source-files/creature-action-cards.js"></script>
+        <script type="module" src="../source-files/creature-genes.js"></script>
+        <script type="module" src="../utilities/roll-dice.js"></script>
+        <script type="module" src="main.js"></script>
+    </head>
+    <body>
+        <h1>Alien Zoology Create & Edit Creature</h1>
+        <section id="genes-section">
+            <h2>Creature Genes</h2>
+            <select class="add-single-dropdown">
+                <option value="" disabled selected>select a creature gene</option>
+            </select>
+            <button class="add-single-button" disabled>add creature gene</button>
+            <br/>
+            <!-- add a random gene  -->
+            <!-- <button class="add-all-button">add all creature genes</button> -->
+            <button class="remove-all-button" disabled>remove all creature genes</button>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>D50</th>
+                        <th>Gene Title</th>
+                        <th>Description</th>
+                        <th>Effect</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+        <section id="action-cards-section">
+            <h2>Creature Action Cards</h2>
+            <select class="add-single-dropdown">
+                <option value="" disabled selected>select a creature action card</option>
+            </select>
+            <button class="add-single-button" disabled>add creature action card</button>
+            <br/>
+            <!-- add a random action card  -->
+            <!-- <button class="add-all-button">add all creature action cards</button> -->
+            <button class="remove-all-button" disabled>remove all creature action cards</button>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>D50</th>
+                        <th>Action Card Title</th>
+                        <th>Effect</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+    </body>
+</html>
