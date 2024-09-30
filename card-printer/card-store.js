@@ -22,6 +22,14 @@ export class CardStore {
         this.creatureActionCardIds = creatureActionCardIds ?? [];
     }
 
+    reloadUrl () {
+        const {
+            [CARD_DETAILS.CREATURE_ACTIONS.PARAM_NAME]: creatureActionCardIds
+        } = loadIdsFromUrl();
+
+        this.creatureActionCardIds = creatureActionCardIds ?? [];
+    }
+
     updateUrl () {
         saveIdsToUrl({
             [CARD_DETAILS.CREATURE_ACTIONS.PARAM_NAME]: this.creatureActionCardIds
@@ -34,7 +42,7 @@ export class CardStore {
             this.creatureActionCardIds.sort((a, b) => a - b);
             this.updateUrl();
             this.triggerEvent({
-                type: EVENT_TYPES.ROWS_ADDED
+                type: EVENT_TYPES.IDS_ADDED
             });
             return;
         }
@@ -52,7 +60,7 @@ export class CardStore {
 
             this.updateUrl();
             this.triggerEvent({
-                type: EVENT_TYPES.ROWS_REMOVED
+                type: EVENT_TYPES.IDS_REMOVED
             });
             return;
         }

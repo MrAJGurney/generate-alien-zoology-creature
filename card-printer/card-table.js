@@ -13,7 +13,7 @@ export class CardTable {
         this.subscribers = [];
 
         this.subscribe({
-            eventTypes: [EVENT_TYPES.ROWS_ADDED, EVENT_TYPES.ROWS_REMOVED],
+            eventTypes: [EVENT_TYPES.IDS_ADDED, EVENT_TYPES.IDS_REMOVED],
             subscriber: this.renderTable.bind(this)
         })
 
@@ -30,10 +30,18 @@ export class CardTable {
         });
 
         this.triggerEvent({
-            type: EVENT_TYPES.ROWS_ADDED
+            type: EVENT_TYPES.IDS_ADDED
         });
 
         this.renderTable();
+    }
+
+    reloadUrl () {
+        this.cardStore.reloadUrl();
+
+        this.triggerEvent({
+            type: EVENT_TYPES.IDS_ADDED
+        });
     }
 
     subscribe ({eventTypes, subscriber}) {

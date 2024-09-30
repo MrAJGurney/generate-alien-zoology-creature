@@ -15,7 +15,7 @@ export class ButtonsPanel {
         this.subscribeToCardTable = subscribeToCardTable;
 
         this.subscribeToCardTable({
-            eventTypes: [EVENT_TYPES.ROWS_ADDED, EVENT_TYPES.ROWS_REMOVED],
+            eventTypes: [EVENT_TYPES.IDS_ADDED, EVENT_TYPES.IDS_REMOVED],
             subscriber: this.updateButtons.bind(this)
         })
 
