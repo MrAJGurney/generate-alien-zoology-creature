@@ -1,73 +1,45 @@
 import { CREATURE_ACTION_CARDS } from "../source-files/creature-action-cards.js";
+import { EVENT_TYPES } from "./event-types.js";
+import { AddAndRemoveRowsPanel } from "./add-and-remove-rows-panel.js";
 
-const SOURCE_TABLES = {
+const SOURCE_TABLE_NAMES = {
     CREATURE_ACTION_CARDS: '7.2 Creatures: Action Cards table'
 };
 
-class CardPrinter {
+export class CardPrinter {
     constructor({
         cardsToPrintTableBody,
-        creatureActionCardAddSingleDropdown,
-        creatureActionCardAddSingleButton,
-        creatureActionCardsAddAllButton,
-        creatureActionCardsRemoveAllButton,
+        creatureActionCardsSection
     }) {
         this.cardsToPrintTableBody = cardsToPrintTableBody;
 
-        this.creatureActionCard = {
-            addSingleDropdown: creatureActionCardAddSingleDropdown,
-            addSingleButton: creatureActionCardAddSingleButton,
-            addAllButton: creatureActionCardsAddAllButton,
-            removeAllButton: creatureActionCardsRemoveAllButton,
-        }
+        this.subscribers = [];
 
-        CardPrinter.populateDropdown(this.creatureActionCard.addSingleDropdown, CREATURE_ACTION_CARDS);
+        this.subscribe({
+            eventTypes: [EVENT_TYPES.ROWS_ADDED],
+            subscriber: this.sortTable.bind(this)
+        })
 
-        this.creatureActionCard.addSingleDropdown.addEventListener('change', () => {
-            if (this.creatureActionCard.addSingleDropdown.value !== "") {
-                this.creatureActionCard.addSingleButton.disabled = false;
+        this.addAndRemoveCreatureActionCards = new AddAndRemoveRowsPanel({
+            section: creatureActionCardsSection,
+            cards: CREATURE_ACTION_CARDS,
+            title: SOURCE_TABLE_NAMES.CREATURE_ACTION_CARDS,
+            addRows: this.addRows.bind(this),
+            deleteAllRowsFromSourceTableName: this.deleteAllRowsFromSourceTableName.bind(this),
+            subscribeToCardPrinter: this.subscribe.bind(this)
+        });
+    }
+
+    subscribe ({eventTypes, subscriber}) {
+        this.subscribers.push({ eventTypes, subscriber });
+    }
+
+    triggerEvent (event) {
+        this.subscribers.forEach(({ eventTypes, subscriber }) => {
+            if (eventTypes.includes(event.type)) {
+                subscriber(event);
             }
         });
-
-        this.creatureActionCard.addSingleButton.addEventListener('click', () => {
-            const creatureActionCard = CREATURE_ACTION_CARDS.find(({id}) => id.toString() === this.creatureActionCard.addSingleDropdown.value);
-            this.addRow(SOURCE_TABLES.CREATURE_ACTION_CARDS, creatureActionCard.id, creatureActionCard.name);
-
-            this.handleRowAdded();
-        });
-
-        this.creatureActionCard.addAllButton.addEventListener('click', () => {
-            CREATURE_ACTION_CARDS.forEach(creatureActionCard => {
-                this.addRow(SOURCE_TABLES.CREATURE_ACTION_CARDS, creatureActionCard.id, creatureActionCard.name);
-            });
-
-            this.handleRowAdded();
-        });
-
-        this.creatureActionCard.removeAllButton.addEventListener('click', () => {
-            this.cardsToPrintTableBody.querySelectorAll('tr').forEach(row => row.remove());
-
-            this.handleRowDeleted();
-        });
-    }
-
-    static populateDropdown(dropdown, cards) {
-        cards.forEach(({ id, name }) => {
-            const newOption = document.createElement('option');
-            newOption.value = id;
-            newOption.textContent = `${id}: ${name}`;
-            dropdown.appendChild(newOption);
-        });
-    }
-
-    updateButtons () {
-        const hasCreatureActionCards = this.cardsToPrintTableBody.querySelectorAll('tr').values().some(row => {
-            const cells = row.querySelectorAll('td');
-            const sourceTableName = cells[0].textContent;
-            return sourceTableName === SOURCE_TABLES.CREATURE_ACTION_CARDS
-        });
-
-        this.creatureActionCard.removeAllButton.disabled = !hasCreatureActionCards;
     }
 
     sortTable () {
@@ -90,42 +62,41 @@ class CardPrinter {
         rows.forEach(row => this.cardsToPrintTableBody.appendChild(row));
     }
 
-    handleRowAdded () {
-        this.updateButtons();
-        this.sortTable();
+    deleteAllRowsFromSourceTableName (sourceTableName) {
+        this.cardsToPrintTableBody.querySelectorAll('tr').forEach(row => {
+            if (row.querySelectorAll('td')[0].textContent === sourceTableName) {
+                row.remove();
+            }
+        });
+
+        this.triggerEvent({
+            type: EVENT_TYPES.ROWS_REMOVED,
+            tableRows: this.cardsToPrintTableBody.querySelectorAll('tr').values()
+        });
     }
 
-    handleRowDeleted () {
-        this.updateButtons();
-    }
+    addRows(rows) {
+        rows.forEach(({ sourceTableName, cardId, cardName }) => {
+            const row = this.cardsToPrintTableBody.insertRow();
+            row.insertCell(0).appendChild(document.createTextNode(sourceTableName));
+            row.insertCell(1).appendChild(document.createTextNode(cardId));
+            row.insertCell(2).appendChild(document.createTextNode(cardName));
+    
+            const deleteRowButton = document.createElement('button');
+            deleteRowButton.textContent = 'remove card';
+            deleteRowButton.onclick = () => {
+                row.remove();
+                this.triggerEvent({
+                    type: EVENT_TYPES.ROWS_REMOVED,
+                    tableRows: this.cardsToPrintTableBody.querySelectorAll('tr').values()
+                });
+            };
+            row.insertCell(3).appendChild(deleteRowButton);
+        });
 
-    deleteRow (row) {
-        row.remove();
-        this.handleRowDeleted();
-    }
-
-    addRow(sourceTableName, cardId, cardName) {
-        const row = this.cardsToPrintTableBody.insertRow();
-        row.insertCell(0).appendChild(document.createTextNode(sourceTableName));
-        row.insertCell(1).appendChild(document.createTextNode(cardId));
-        row.insertCell(2).appendChild(document.createTextNode(cardName));
-
-        const deleteRowButton = document.createElement('button');
-        deleteRowButton.textContent = 'remove card';
-        deleteRowButton.onclick = () => this.deleteRow(row);
-        row.insertCell(3).appendChild(deleteRowButton);
-        this.handleRowAdded();
+        this.triggerEvent({
+            type: EVENT_TYPES.ROWS_ADDED,
+            tableRows: this.cardsToPrintTableBody.querySelectorAll('tr').values()
+        });
     }
 }
-
-const main = () => {
-    const cardPrinter = new CardPrinter({
-        cardsToPrintTableBody: document.querySelector("#cards-to-print-table tbody"),
-        creatureActionCardAddSingleDropdown: document.getElementById('creature-action-card-add-single-dropdown'),
-        creatureActionCardAddSingleButton: document.getElementById('creature-action-card-add-single-button'),
-        creatureActionCardsAddAllButton: document.getElementById('creature-action-cards-add-all-button'),
-        creatureActionCardsRemoveAllButton: document.getElementById('creature-action-cards-remove-all-button')
-    });
-}
-
-window.addEventListener('load', main);
