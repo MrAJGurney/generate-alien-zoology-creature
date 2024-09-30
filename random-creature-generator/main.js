@@ -1,9 +1,37 @@
 import { CREATURE_GENES } from '../source-files/creature-genes.js'
 import { CREATURE_ACTION_CARDS } from '../source-files/creature-action-cards.js'
+import { loadIdsFromUrl, saveIdsToUrl } from '../utilities/url-data-store.js'
 import { rollD50 } from '../utilities/roll-dice.js'
 
-const generateCreature = () => {
-  const genes = Array(4)
+const PARAMS = {
+  GENE_IDS: 'geneIds',
+  ACTION_IDS: 'actionIds'
+}
+
+const generateCreatureFromUrl = () => {
+  const storedData = loadIdsFromUrl();
+
+  if (!storedData || !storedData[PARAMS.GENE_IDS] || !storedData[PARAMS.ACTION_IDS]) {
+    return {genes: [], actions: []};
+  }
+
+  const { geneIds, actionIds } = storedData;
+  const genes = geneIds
+                  .toSorted((a,b) => a - b)
+                  .map(geneId => CREATURE_GENES.find(({id}) => geneId === id));
+
+  const actions = actionIds
+                    .toSorted((a,b) => a - b)
+                    .map(actionId => CREATURE_ACTION_CARDS.find(({id}) => actionId === id));
+
+  return {
+    genes,
+    actions
+  };
+}
+
+const storeRandomCreatureInUrl = () => {
+  const geneIds = Array(4)
                 .fill(null)
                 .reduce((diceRolls) => {
                   let dieRoll;
@@ -14,13 +42,12 @@ const generateCreature = () => {
                   return diceRolls;
                 }, [])
                 .toSorted((a,b) => a - b)
-                .map(geneId => CREATURE_GENES.find(({id}) => geneId === id));
 
-  const geneActionCardIds = genes
+  const geneActionCardIds = geneIds
                             .filter(({actionCard}) => actionCard)
                             .map(({actionCard: {id}}) => id);
 
-  const actions = Array(5)
+  const actionIds = Array(5)
                     .fill(null)
                     .reduce((actionCardIds) => {
                       let newId;
@@ -30,13 +57,12 @@ const generateCreature = () => {
                       actionCardIds.push(newId)
                       return actionCardIds;
                     }, geneActionCardIds)
-                    .toSorted((a,b) => a - b)
-                    .map(actionId => CREATURE_ACTION_CARDS.find(({id}) => actionId === id));
+                    .toSorted((a,b) => a - b);
 
-  return {
-    genes,
-    actions
-  };
+  saveIdsToUrl([
+    [PARAMS.GENE_IDS, geneIds],
+    [PARAMS.ACTION_IDS, actionIds]
+  ])
 }
 
 const addGenesRow = (table, {id, name, description, effect}) => {
@@ -64,18 +90,28 @@ const replaceActionCardsRows = (actions) => {
   actions.forEach(action => addActionCardsRow(table, action));
 }
 
+const populateTableFromUrl = () => {
+  const { genes, actions } = generateCreatureFromUrl();
+
+  document.querySelectorAll("tbody tr").forEach(row => row.remove());
+
+  replaceGenesRows(genes.toSorted((a,b) => a.id - b.id));
+  replaceActionCardsRows(actions.toSorted((a,b) => a.id - b.id));
+}
+
 const main = () => {
+  populateTableFromUrl();
+
   const generateNewCreatureButton = document.getElementById('generate-new-creature-button');
+
   generateNewCreatureButton.addEventListener('click', () => {
-    const {genes, actions } = generateCreature();
-
-    document.querySelectorAll("tbody tr").forEach(row => row.remove());
-
-    replaceGenesRows(genes);
-    replaceActionCardsRows(actions);
+    storeRandomCreatureInUrl();
+    populateTableFromUrl();
   });
 
-  generateCreature();
+  window.addEventListener('popstate', () => {
+    populateTableFromUrl(); 
+  });
 }
 
 window.addEventListener('load', main);
