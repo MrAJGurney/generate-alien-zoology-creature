@@ -1,15 +1,20 @@
 import { EVENT_TYPES } from "./event-types.js";
 
-export class AddAndRemoveRowsPanel {
-    constructor({section, cards, title, addRows, deleteAllRowsFromSourceTableName, subscribeToCardPrinter}) {
+export class ButtonsPanel {
+    constructor({
+        section,
+        cards,
+        key,
+        cardStore,
+        subscribeToCardTable
+    }) {
         this.section = section;
         this.cards = cards;
-        this.title = title;
-        this.addRows = addRows;
-        this.deleteAllRowsFromSourceTableName = deleteAllRowsFromSourceTableName;
-        this.subscribeToCardPrinter = subscribeToCardPrinter;
+        this.key = key;
+        this.cardStore = cardStore;
+        this.subscribeToCardTable = subscribeToCardTable;
 
-        this.subscribeToCardPrinter({
+        this.subscribeToCardTable({
             eventTypes: [EVENT_TYPES.ROWS_ADDED, EVENT_TYPES.ROWS_REMOVED],
             subscriber: this.updateButtons.bind(this)
         })
@@ -28,18 +33,24 @@ export class AddAndRemoveRowsPanel {
         });
 
         this.addSingleButton.addEventListener('click', () => {
-            const creatureActionCard = this.cards.find(({id}) => id.toString() === this.addSingleDropdown.value);
-            this.addRows([{ sourceTableName: this.title, cardId: creatureActionCard.id, cardName: creatureActionCard.name }]);
+            this.cardStore.addCardIds(
+                this.key,
+                [this.addSingleDropdown.value]
+            );
         });
 
         this.addAllButton.addEventListener('click', () => {
-            this.addRows(
-                this.cards.values().map(creatureActionCard => ({ sourceTableName: this.title, cardId: creatureActionCard.id, cardName: creatureActionCard.name }))
+            this.cardStore.addCardIds(
+                this.key,
+                this.cards.map(({id}) => id)
             );
         });
 
         this.removeAllButton.addEventListener('click', () => {
-            this.deleteAllRowsFromSourceTableName(this.title);
+            this.cardStore.removeCardIds(
+                this.key,
+                this.cardStore.getCardIds(this.key)
+            );
         });
     }
 
@@ -52,13 +63,8 @@ export class AddAndRemoveRowsPanel {
         });
     }
 
-    updateButtons (event) {
-        const hasRelevantActionCards = event.tableRows.some(row => {
-            const cells = row.querySelectorAll('td');
-            const sourceTableName = cells[0].textContent;
-            return sourceTableName === this.title;
-        });
-
-        this.removeAllButton.disabled = !hasRelevantActionCards;
+    updateButtons () {
+        const cardIdsExist = this.cardStore.getCardIds(this.key).length > 0;
+        this.removeAllButton.disabled = !cardIdsExist;
     }
 }
