@@ -16,35 +16,22 @@ const generateCreature = () => {
                 .toSorted((a,b) => a - b)
                 .map(geneId => CREATURE_GENES.find(({id}) => geneId === id));
 
+  const geneActionCardIds = genes
+                            .filter(({actionCard}) => actionCard)
+                            .map(({actionCard: {id}}) => id);
+
   const actions = Array(5)
                     .fill(null)
-                    .reduce((diceRolls) => {
-                      let dieRoll;
+                    .reduce((actionCardIds) => {
+                      let newId;
                       do {
-                        dieRoll = rollD50();
-                      } while (diceRolls.includes(dieRoll));
-                      diceRolls.push(dieRoll)
-                      return diceRolls;
-                    }, [])
+                        newId = rollD50();
+                      } while (actionCardIds.includes(newId));
+                      actionCardIds.push(newId)
+                      return actionCardIds;
+                    }, geneActionCardIds)
                     .toSorted((a,b) => a - b)
                     .map(actionId => CREATURE_ACTION_CARDS.find(({id}) => actionId === id));
-
-  genes.forEach(({id: actionId}) => {
-    if (actionId == 3 && !actions.find(({id}) => id == 22)) {
-      actions.push(CREATURE_ACTION_CARDS.find(({id}) => id == 22));
-    }
-    if (actionId == 15 && !actions.find(({id}) => id == 10)) {
-      actions.push(CREATURE_ACTION_CARDS.find(({id}) => id == 10));
-    }
-    if (actionId == 20 && !actions.find(({id}) => id == 6)) {
-      actions.push(CREATURE_ACTION_CARDS.find(({id}) => id == 6));
-    }
-    if (actionId == 26 && !actions.find(({id}) => id == 27)) {
-      actions.push(CREATURE_ACTION_CARDS.find(({id}) => id == 27));
-    }
-
-    actions.sort(({id: a}, {id: b}) => a - b);
-  });
 
   return {
     genes,
