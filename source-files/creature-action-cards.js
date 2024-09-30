@@ -1,3 +1,5 @@
+// No. 14, Stone Throw, has an emoji that seems to cause issues. Using "⛰️" instead
+
 export const CREATURE_ACTION_CARDS = [
     {
         "id": 1,
@@ -66,7 +68,7 @@ export const CREATURE_ACTION_CARDS = [
     },
     {
         "id": 14,
-        "name": "Stone throw 🪨",
+        "name": "Stone throw ⛰️",
         "effect": "The creature throws a stone at the figure with the highest 😡 value within a 12” radius (random in case of a tie). It performs a shooting attack (SHO-test). If successful, the target must pass a DEF-test. If this fails, the target receives -1 HP."
     },
     {
