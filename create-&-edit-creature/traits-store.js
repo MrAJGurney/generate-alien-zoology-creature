@@ -99,6 +99,9 @@ export class TraitStore {
                 traitIds.forEach(id => {
                     // looping through it this way so if there are three copies of an id, just two could be deleted rather than all of them
                     const index = this.geneIds.findIndex(geneId => geneId === id);
+if (index < 0) {
+                        return;
+                    }
                     this.geneIds.splice(index, 1);
                 });
                 return;
@@ -107,6 +110,9 @@ export class TraitStore {
                 traitIds.forEach(id => {
                     // looping through it this way so if there are three copies of an id, just two could be deleted rather than all of them
                     const index = this.actionIds.findIndex(actionId => actionId === id);
+if (index < 0) {
+                        return;
+                    }
                     this.actionIds.splice(index, 1);
                 });
                 return;
