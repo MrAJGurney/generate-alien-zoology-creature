@@ -2,10 +2,7 @@ import { CreateAndEditCreature } from "./create-and-edit-creature.js";
 
 
 const main = () => {
-    const createAndEditCreature = new CreateAndEditCreature({
-		genesSection: document.getElementById('genes-section'),
-		actionsSection: document.getElementById('action-section')
-	});
+    const createAndEditCreature = new CreateAndEditCreature();
 
 	window.addEventListener('popstate', () => {
         createAndEditCreature.reloadUrl();
