@@ -1,21 +1,23 @@
 import { CREATURE_GENES } from "../source-files/creature-genes.js";
 import { CREATURE_ACTION_CARDS } from "../source-files/creature-action-cards.js";
-
-export const EVENT_TYPES = {
-	ROWS_ADDED: 'rows added',
-	ROWS_REMOVED: 'rows added'
-};
+import { TRAITS_DETAILS, TraitStore } from "./traits-store.js";
+import { rollD50 } from "../utilities/roll-dice.js";
 
 class ButtonPanel {
 	constructor({
-		options,
+		traitDetails,
+		availableTraits,
 		section,
-		hasDescription
+		subscribe,
+		traitStore
 	}) {
-		this.options = options;
+		this.traitDetails = traitDetails;
+		this.availableTraits = availableTraits;
 		this.section = section;
-		this.hasDescription = hasDescription;
+		this.subscribe = subscribe;
+		this.traitStore = traitStore;
 
+		this.addRandomButton = section.getElementsByClassName('add-random-button')[0];
         this.addSingleDropdown = section.getElementsByClassName('add-single-dropdown')[0];
         this.addSingleButton = section.getElementsByClassName('add-single-button')[0];
         this.removeAllButton = section.getElementsByClassName('remove-all-button')[0];
@@ -23,18 +25,40 @@ class ButtonPanel {
 
         this.populateDropdown();
 
+		this.addRandomButton.addEventListener(
+			'click',
+			() => this.addRandomTrait()
+		);
+
         this.addSingleDropdown.addEventListener('change', () => this.updateButtons());
 
-        this.addSingleButton.addEventListener('click', () => {
-            const option = this.options.find(({id}) => id.toString() === this.addSingleDropdown.value);
-            this.addRows([option]);
+        this.addSingleButton.addEventListener(
+			'click',
+			() => this.addTraits([this.addSingleDropdown.value])
+		);
+
+        this.removeAllButton.addEventListener(
+			'click',
+			() => this.removeAllTraits()
+		);
+
+        this.subscribe({
+            eventTypes: [this.traitDetails.CHANGED_EVENT],
+            subscriber: this.renderTable.bind(this)
         });
 
-        this.removeAllButton.addEventListener('click', () => this.removeAllRows(this.title));
+		this.subscribe({
+            eventTypes: [this.traitDetails.CHANGED_EVENT],
+            subscriber: this.updateButtons.bind(this)
+        });
 	}
 
-    populateDropdown() {
-        this.options.forEach(({ id, name }) => {
+	isTraitMutable (traitId) {
+		return true;
+	}
+
+    populateDropdown () {
+        this.availableTraits.forEach(({ id, name }) => {
             const newOption = document.createElement('option');
             newOption.value = id;
             newOption.textContent = `${id}: ${name}`;
@@ -42,80 +66,158 @@ class ButtonPanel {
         });
     }
 
-    addRows(options) {
-        options.forEach(({ id, name, description, effect }) => {
-            const row = this.table.insertRow();
-            row.insertCell(0).appendChild(document.createTextNode(id));
-            row.insertCell(1).appendChild(document.createTextNode(name));
+	addTraits (traitIds) {
+		this.traitStore.addTraitIds([[this.traitDetails.KEY, traitIds]])
+	}
 
-			const offset = this.hasDescription ? 1 : 0;
+	removeTraits (traitIds) {
+		this.traitStore.removeTraitIds([[this.traitDetails.KEY, traitIds]])
+	}
 
-			if (this.hasDescription) {
-				row.insertCell(2).appendChild(document.createTextNode(description));
-			}
+	addRandomTrait () {
+		const traitIds = this.traitStore.getTraitIds(this.traitDetails.KEY);
 
-            row.insertCell(2 + offset).appendChild(document.createTextNode(effect));
+		// this is not a good implementation for generating a new trait, but it is functional and readable
+		let newTraitId;
+		do {
+			newTraitId = rollD50();
+		} while (!this.isTraitMutable(newTraitId) || traitIds.includes(newTraitId))
 
-            const deleteRowButton = document.createElement('button');
-            deleteRowButton.textContent = 'remove';
-            deleteRowButton.onclick = () => {
-                row.remove();
-                this.updateButtons();
-            };
-            row.insertCell(3 + offset).appendChild(deleteRowButton);
-        });
+		this.addTraits([newTraitId]);
+	}
 
-		this.sortTable();
-		this.updateButtons();
-    }
-
-	removeAllRows () {
-		this.table.querySelectorAll('tr').forEach(row => row.remove());
-
-		this.updateButtons();
+	removeAllTraits () {
+		const unlockedIds = this.traitStore.getTraitIds(this.traitDetails.KEY).filter(id => this.isTraitMutable(id));
+		this.removeTraits(unlockedIds);
 	}
 
 	updateButtons () {
-		const tableRows = this.table.querySelectorAll('tr');
+		const addedIds = this.traitStore.getTraitIds(this.traitDetails.KEY);
+
+		// update add random button
+        this.addRandomButton.disabled = addedIds.length >= this.availableTraits.length;
 
 		// update add single dropdown
-		const optionIndicesToDisable = [];
-		const optionIndicesToEnable = [];
 		 Array.from(this.addSingleDropdown.options).forEach(
-			(option) => {
-				// .index
-				const shouldBeDisabled = Array.from(tableRows).map(row => row.querySelectorAll('td')[0].textContent).includes(option.value);
-				if (shouldBeDisabled) {
-					optionIndicesToDisable.push(option.index);
-				} else {
-					optionIndicesToEnable.push(option.index);
-				}
-			}
-		)
-		optionIndicesToDisable.forEach(index => this.addSingleDropdown.options.item(index).disabled = true);
-		optionIndicesToEnable.forEach(index => this.addSingleDropdown.options.item(index).disabled = false);
+			(option, index) => this.addSingleDropdown.options[index].disabled = (
+				!this.isTraitMutable(parseInt(option.value)) || addedIds.includes(parseInt(option.value))
+			)
+		);
 
 		// update add single button
-		const dropdownSelectionValid = this.addSingleDropdown.value !== "" && !this.addSingleDropdown.options[this.addSingleDropdown.selectedIndex].disabled;
+		const selectedTraitId = this.addSingleDropdown.value;
+		const dropdownSelectionValid = selectedTraitId !== "" && this.isTraitMutable(selectedTraitId) && !addedIds.includes(parseInt(selectedTraitId));
 		this.addSingleButton.disabled = !dropdownSelectionValid;
 
 		// update remove all button
-		const tableHasRows = tableRows.length >= 1;
-        this.removeAllButton.disabled = !tableHasRows;
-    }
+        this.removeAllButton.disabled = addedIds.every(traitId => !this.isTraitMutable(traitId));
+	}
 
-	sortTable () {
-        const rows = Array.from(this.table.querySelectorAll('tr'));
-        rows.sort((a, b) => {
-            const aId = a.cells[0].textContent;
-            const bId = b.cells[0].textContent;
+	addCellsToRow (row, trait) {
+		throw new Error(`"addCellsToRow" does not have an implementation`);
+	}
 
-			return aId - bId;
-        });
+	getDeleteRowButtonForTraitId (traitId) {
+		const deleteRowButton = document.createElement('button');
+		deleteRowButton.textContent = 'remove';
+		deleteRowButton.onclick = () => this.removeTraits([traitId]);
+		if (!this.isTraitMutable(traitId)) {
+			deleteRowButton.disabled = true;
+		}
+		return deleteRowButton
+	}
+
+	renderTable () {
+		const traitIds = this.traitStore.getTraitIds(this.traitDetails.KEY);
+		const traits = traitIds.map(traitId => this.availableTraits.find(({id}) => id === traitId));
 
         this.table.innerHTML = '';
-        rows.forEach(row => this.table.appendChild(row));
-    }
+        traits.forEach((trait) => {
+			const row = this.table.insertRow();
+			this.addCellsToRow(row, trait);
+        });
+	}
+}
+
+class GenesButtonPanel extends ButtonPanel{
+	constructor ({
+		getActionsFromGenes,
+		setActionsFromGenes,
+		...params
+	}) {
+		super(params);
+
+		this.getActionsFromGenes = getActionsFromGenes;
+		this.setActionsFromGenes = setActionsFromGenes;
+	}
+
+	addTraits (geneIds) {
+		super.addTraits(geneIds);
+
+		this.setActionsFromGenes();
+
+		this.traitStore.removeTraitIds([[TRAITS_DETAILS.ACTIONS.KEY, this.getActionsFromGenes()]])
+	}
+
+	removeTraits (geneIds) {
+		super.removeTraits(geneIds);
+
+		this.setActionsFromGenes();
+	}
+
+	addCellsToRow (row, {id, name, description, effect }) {
+		row.insertCell(0).appendChild(document.createTextNode(id));
+		row.insertCell(1).appendChild(document.createTextNode(name));
+		row.insertCell(2).appendChild(document.createTextNode(description));
+		row.insertCell(3).appendChild(document.createTextNode(effect));
+		row.insertCell(4).appendChild(this.getDeleteRowButtonForTraitId(id));
+	}
+}
+
+class ActionsButtonPanel extends ButtonPanel{
+	constructor ({
+		getActionsFromGenes,
+		...params
+	}) {
+		super(params);
+
+		this.getActionsFromGenes = getActionsFromGenes;
+
+		this.subscribe({
+            eventTypes: [TRAITS_DETAILS.GENES.CHANGED_EVENT],
+            subscriber: this.renderTable.bind(this)
+        });
+	}
+
+	isTraitMutable (actionId) {
+		const actionIdsFromGenes = this.getActionsFromGenes();
+		return !actionIdsFromGenes.includes(actionId);
+	}
+
+	addCellsToRow (row, {id, name, effect }) {
+		row.insertCell(0).appendChild(document.createTextNode(id));
+		row.insertCell(1).appendChild(document.createTextNode(name));
+		row.insertCell(2).appendChild(document.createTextNode(effect));
+		row.insertCell(3).appendChild(this.getDeleteRowButtonForTraitId(id));
+		row.insertCell(4).appendChild(document.createTextNode(
+			this.isTraitMutable(id)
+				? '-'
+				: CREATURE_GENES.find(({actionCard}) => actionCard?.id === id ).name
+			));
+	}
+
+	renderTable () {
+		const actionIds = this.traitStore.getTraitIds(this.traitDetails.KEY)
+			.concat(this.getActionsFromGenes())
+			.sort((a, b) => a - b);
+		const traits = actionIds.map(traitId => this.availableTraits.find(({id}) => id === traitId));
+
+        this.table.innerHTML = '';
+        traits.forEach((trait) => {
+			const row = this.table.insertRow();
+			this.addCellsToRow(row, trait);
+        });
+	}
 }
 
 class CreateAndEditCreature {
@@ -123,26 +225,159 @@ class CreateAndEditCreature {
 		genesSection,
 		actionCardsSection
     }) {
-		this.genes = new ButtonPanel({
-			options: CREATURE_GENES,
+        this.subscribers = [];
+
+		this.actionsFromGenes = [];
+
+		this.traitStore = new TraitStore({
+			triggerEvent: this.triggerEvent.bind(this)
+		})
+
+		this.genesButtonPanel = new GenesButtonPanel({
+			traitDetails: TRAITS_DETAILS.GENES,
+			availableTraits: CREATURE_GENES,
 			section: genesSection,
-			hasDescription: true
+			subscribe: this.subscribe.bind(this),
+			traitStore: this.traitStore,
+			getActionsFromGenes: this.getActionsFromGenes.bind(this),
+			setActionsFromGenes: this.setActionsFromGenes.bind(this)
 		});
-		this.actions = new ButtonPanel({
-			options: CREATURE_ACTION_CARDS,
+
+		this.actionsButtonPanel = new ActionsButtonPanel({
+			traitDetails: TRAITS_DETAILS.ACTIONS,
+			availableTraits: CREATURE_ACTION_CARDS,
 			section: actionCardsSection,
-			hasDescription: false
+			subscribe: this.subscribe.bind(this),
+			traitStore: this.traitStore,
+			getActionsFromGenes: this.getActionsFromGenes.bind(this)
 		});
+
+		const generateNewSection = document.getElementById('generate-new-creature-section');
+
+		this.generateNewRandomCreatureButton = generateNewSection.getElementsByClassName('generate-new-random-creature-button')[0];
+		this.generateNewRandomCreatureButton.addEventListener(
+			'click',
+			() => {
+				const geneIds = Array(4)
+					.fill(null)
+					.reduce((geneIds) => {
+						let newGeneId;
+						do {
+							newGeneId = rollD50();
+						} while (geneIds.includes(newGeneId));
+						geneIds.push(newGeneId)
+						return geneIds;
+					}, []);
+
+				const actionIdsFromGenes = geneIds
+					.map((geneId) => CREATURE_GENES.find(({id}) => geneId === id))
+					.filter(({actionCard}) => actionCard)
+					.map(({actionCard: {id}}) => id);
+
+				const actionIds = Array(5)
+					.fill(null)
+					.reduce((actionIds) => {
+						let newActionId;
+						do {
+							newActionId = rollD50();
+						} while (actionIds.includes(newActionId) || actionIdsFromGenes.includes(newActionId));
+						actionIds.push(newActionId)
+						return actionIds;
+						}, []);
+
+				this.traitStore.replaceTraitIds([
+					[TRAITS_DETAILS.GENES.KEY, geneIds],
+					[TRAITS_DETAILS.ACTIONS.KEY, actionIds]
+				])
+			}
+		);
+
+		this.removeAllGenesAndActionsButton = generateNewSection.getElementsByClassName('remove-all-genes-and-actions-button')[0];
+		this.removeAllGenesAndActionsButton.addEventListener(
+			'click',
+			() => {
+				const geneIds = this.traitStore.getTraitIds(TRAITS_DETAILS.GENES.KEY);
+				const actionIds = this.traitStore.getTraitIds(TRAITS_DETAILS.ACTIONS.KEY);
+				this.traitStore.removeTraitIds([
+					[TRAITS_DETAILS.GENES.KEY, geneIds],
+					[TRAITS_DETAILS.ACTIONS.KEY, actionIds]
+				])
+			}
+		);
+
+		this.subscribe({
+            eventTypes: [TRAITS_DETAILS.GENES.CHANGED_EVENT],
+            subscriber: this.setActionsFromGenes.bind(this)
+        });
+
+		this.subscribe({
+            eventTypes: [TRAITS_DETAILS.GENES.CHANGED_EVENT, TRAITS_DETAILS.ACTIONS.CHANGED_EVENT],
+            subscriber: this.updateButtons.bind(this)
+        });
+
+		this.reloadUrl();
     }
+
+	reloadUrl () {
+        this.traitStore.reloadUrl();
+
+        this.triggerEvent({
+            type: TRAITS_DETAILS.GENES.CHANGED_EVENT
+        });
+
+        this.triggerEvent({
+            type: TRAITS_DETAILS.ACTIONS.CHANGED_EVENT
+        });
+    }
+
+    subscribe ({eventTypes, subscriber}) {
+        this.subscribers.push({ eventTypes, subscriber });
+    }
+
+    triggerEvent (event) {
+        this.subscribers.forEach(({ eventTypes, subscriber }) => {
+            if (eventTypes.includes(event.type)) {
+                subscriber(event);
+            }
+        });
+    }
+
+	setActionsFromGenes () {
+		const addedGeneIds = this.traitStore.getTraitIds(TRAITS_DETAILS.GENES.KEY);
+
+		const genesAddingActions = CREATURE_GENES
+			.filter(({actionCard}) => actionCard)
+			.filter(({id}) => addedGeneIds.includes(id));
+
+		this.actionsFromGenes = genesAddingActions.map(({actionCard: {id}}) => id)
+
+        this.triggerEvent({
+            type: TRAITS_DETAILS.ACTIONS.CHANGED_EVENT
+        });
+	}
+
+	getActionsFromGenes () {
+		return [...this.actionsFromGenes]
+	}
+
+	updateButtons () {
+		const addedGenesIds = this.traitStore.getTraitIds(TRAITS_DETAILS.GENES.KEY);
+		const addedActionsIds = this.traitStore.getTraitIds(TRAITS_DETAILS.ACTIONS.KEY);
+
+		// update remove all button
+        this.removeAllGenesAndActionsButton.disabled = !(addedGenesIds.length > 0 || addedActionsIds.length > 0);
+	}
 }
 
-
-
 const main = () => {
-    new CreateAndEditCreature({
+    const createAndEditCreature = new CreateAndEditCreature({
 		genesSection: document.getElementById('genes-section'),
 		actionCardsSection: document.getElementById('action-cards-section')
 	});
+
+	window.addEventListener('popstate', () => {
+        createAndEditCreature.reloadUrl();
+    });
 }
 
 window.addEventListener('load', main);

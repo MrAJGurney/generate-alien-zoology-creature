@@ -15,11 +15,9 @@ export class CardStore {
     }) {
         this.triggerEvent = triggerEvent;
 
-        const {
-            [CARD_DETAILS.CREATURE_ACTIONS.PARAM_NAME]: creatureActionCardIds
-        } = loadIdsFromUrl();
+        this.creatureActionCardIds = [];
 
-        this.creatureActionCardIds = creatureActionCardIds ?? [];
+        this.reloadUrl();
     }
 
     reloadUrl () {
@@ -53,7 +51,7 @@ export class CardStore {
     removeCardIds (cardKey, cardIds) {
         if (cardKey === CARD_DETAILS.CREATURE_ACTIONS.KEY) {
             cardIds.forEach(id => {
-                // Looping through it this way so if there are three copies of an id, just two could be deleted rather than all of them
+                // looping through it this way so if there are three copies of an id, just two could be deleted rather than all of them
                 const index = this.creatureActionCardIds.findIndex(cardId => cardId === id);
                 this.creatureActionCardIds.splice(index, 1);
             });

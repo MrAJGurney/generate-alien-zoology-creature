@@ -6,21 +6,31 @@
         <script type="module" src="../source-files/creature-action-cards.js"></script>
         <script type="module" src="../source-files/creature-genes.js"></script>
         <script type="module" src="../utilities/roll-dice.js"></script>
+        <script type="module" src="traits-store.js"></script>
         <script type="module" src="main.js"></script>
     </head>
     <body>
         <h1>Alien Zoology Create & Edit Creature</h1>
+
+        <section id="generate-new-creature-section">
+            <h2>Generate New Creature</h2>
+            <button class="generate-new-random-creature-button">generate new random creature</button>
+            <br/>
+            <button class="remove-all-genes-and-actions-button">remove all genes and actions</button>
+        </section>
+
         <section id="genes-section">
-            <h2>Creature Genes</h2>
+            <h2>Genes</h2>
+            <button class="add-random-button" disabled>add random gene</button>
+            <br/>
             <select class="add-single-dropdown">
-                <option value="" disabled selected>select a creature gene</option>
+                <option value="" disabled selected>select gene</option>
             </select>
-            <button class="add-single-button" disabled>add creature gene</button>
+            <button class="add-single-button" disabled>add gene</button>
             <br/>
             <!-- add a random gene  -->
-            <!-- <button class="add-all-button">add all creature genes</button> -->
-            <button class="remove-all-button" disabled>remove all creature genes</button>
-
+            <!-- <button class="add-all-button">add all genes</button> -->
+            <button class="remove-all-button" disabled>remove all genes</button>
             <table class="table">
                 <thead>
                     <tr>
@@ -34,16 +44,19 @@
                 <tbody></tbody>
             </table>
         </section>
+
         <section id="action-cards-section">
-            <h2>Creature Action Cards</h2>
-            <select class="add-single-dropdown">
-                <option value="" disabled selected>select a creature action card</option>
-            </select>
-            <button class="add-single-button" disabled>add creature action card</button>
+            <h2>Actions</h2>
+            <button class="add-random-button" disabled>add random action</button>
             <br/>
-            <!-- add a random action card  -->
-            <!-- <button class="add-all-button">add all creature action cards</button> -->
-            <button class="remove-all-button" disabled>remove all creature action cards</button>
+            <select class="add-single-dropdown">
+                <option value="" disabled selected>select action</option>
+            </select>
+            <button class="add-single-button" disabled>add action</button>
+            <br/>
+            <!-- add a random actions  -->
+            <!-- <button class="add-all-button">add all action</button> -->
+            <button class="remove-all-button" disabled>remove all actions</button>
 
             <table class="table">
                 <thead>
@@ -52,6 +65,7 @@
                         <th>Action Card Title</th>
                         <th>Effect</th>
                         <th>Actions</th>
+                        <th>Added By</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
