@@ -331,7 +331,7 @@ export const CREATURE_GENES = [
         description: "It is not clear at first glance whether it is a creature or a plant species. This is due to the creature's plant-like appearance, which is dotted with tendrils, flowers, leaves and roots.",
         effect: "Whenever the creature subtracts HP from a creature which has the ‘Aquatic Features 🌊’ gene, the amount of HP subtracted is doubled (HP damage x2). The creature has -1 DEF (e.g. DEF 6+ -> DEF 5+).",
         profile: {
-            DEF: -5
+            DEF: -1
         }
     },
     {
