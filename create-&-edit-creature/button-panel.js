@@ -36,7 +36,7 @@ export class ButtonPanel {
 
         this.addSingleButton.addEventListener(
 			'click',
-			() => this.addTraits([this.addSingleDropdown.value])
+			() => this.addTraits([parseInt(this.addSingleDropdown.value)])
 		);
 
         this.removeAllButton.addEventListener(
