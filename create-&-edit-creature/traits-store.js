@@ -6,7 +6,7 @@ export const TRAITS_DETAILS = {
         CHANGED_EVENT: 'gene-ids-changed'
     },
     ACTIONS: {
-        KEY: 'actionCardIds',
+        KEY: 'actionIds',
         CHANGED_EVENT: 'action-ids-changed'
     }
 }
@@ -18,7 +18,7 @@ export class TraitStore {
         this.triggerEvent = triggerEvent;
 
         this.geneIds = [];
-        this.actionCardIds = [];
+        this.actionIds = [];
 
         this.reloadUrl()
     }
@@ -26,7 +26,7 @@ export class TraitStore {
     reloadUrl () {
         const {
             [TRAITS_DETAILS.GENES.KEY]: geneIds,
-            [TRAITS_DETAILS.ACTIONS.KEY]: actionCardIds,
+            [TRAITS_DETAILS.ACTIONS.KEY]: actionIds,
             ...unhandledParams
         } = loadIdsFromUrl();
 
@@ -35,13 +35,13 @@ export class TraitStore {
         }
 
         this.geneIds = geneIds ?? [];
-        this.actionCardIds = actionCardIds ?? [];
+        this.actionIds = actionIds ?? [];
     }
 
     updateUrl () {
         saveIdsToUrl({
             [TRAITS_DETAILS.GENES.KEY]: this.geneIds,
-            [TRAITS_DETAILS.ACTIONS.KEY]: this.actionCardIds
+            [TRAITS_DETAILS.ACTIONS.KEY]: this.actionIds
         });
     }
 
@@ -54,8 +54,8 @@ export class TraitStore {
             }
     
             if (traitKey === TRAITS_DETAILS.ACTIONS.KEY) {
-                this.actionCardIds = this.actionCardIds.concat(traitIds.map(id => parseInt(id)));
-                this.actionCardIds.sort((a, b) => a - b);
+                this.actionIds = this.actionIds.concat(traitIds.map(id => parseInt(id)));
+                this.actionIds.sort((a, b) => a - b);
                 return;
             }
     
@@ -87,7 +87,7 @@ export class TraitStore {
         }
 
         if (traitKeys.includes(TRAITS_DETAILS.ACTIONS.KEY)) {
-            this.actionCardIds = [];
+            this.actionIds = [];
         }
 
         this.addTraitIds(traitsWithIds);
@@ -98,7 +98,7 @@ export class TraitStore {
             if (traitKey === TRAITS_DETAILS.GENES.KEY) {
                 traitIds.forEach(id => {
                     // looping through it this way so if there are three copies of an id, just two could be deleted rather than all of them
-                    const index = this.geneIds.findIndex(cardId => cardId === id);
+                    const index = this.geneIds.findIndex(geneId => geneId === id);
                     this.geneIds.splice(index, 1);
                 });
                 return;
@@ -106,8 +106,8 @@ export class TraitStore {
             if (traitKey === TRAITS_DETAILS.ACTIONS.KEY) {
                 traitIds.forEach(id => {
                     // looping through it this way so if there are three copies of an id, just two could be deleted rather than all of them
-                    const index = this.actionCardIds.findIndex(cardId => cardId === id);
-                    this.actionCardIds.splice(index, 1);
+                    const index = this.actionIds.findIndex(actionId => actionId === id);
+                    this.actionIds.splice(index, 1);
                 });
                 return;
             }
@@ -134,25 +134,13 @@ export class TraitStore {
 
     getTraitIds (traitKey) {
         if (traitKey === TRAITS_DETAILS.GENES.KEY) {
-
-            /*
-            * Without the shallow copy using the spread operator, there would be problems when removing cards.
-            * 
-            * When "removing all", the code would delete items from the array it was looping through (despite
-            * them appearing different from looking at the code), and only some ids would be deleted.
-            */
+            // passing by reference risks allowing editing, which should only be through the other class methods
             return [...this.geneIds];
         }
 
         if (traitKey === TRAITS_DETAILS.ACTIONS.KEY) {
-
-            /*
-            * Without the shallow copy using the spread operator, there would be problems when removing cards.
-            * 
-            * When "removing all", the code would delete items from the array it was looping through (despite
-            * them appearing different from looking at the code), and only some ids would be deleted.
-            */
-            return [...this.actionCardIds];
+            // passing by reference risks allowing editing, which should only be through the other class methods
+            return [...this.actionIds];
         }
 
         throw new Error(`Unexpected trait key: "${traitKey}"`)

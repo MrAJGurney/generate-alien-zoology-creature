@@ -223,7 +223,7 @@ class ActionsButtonPanel extends ButtonPanel{
 class CreateAndEditCreature {
 	constructor({
 		genesSection,
-		actionCardsSection
+		actionsSection
     }) {
         this.subscribers = [];
 
@@ -246,7 +246,7 @@ class CreateAndEditCreature {
 		this.actionsButtonPanel = new ActionsButtonPanel({
 			traitDetails: TRAITS_DETAILS.ACTIONS,
 			availableTraits: CREATURE_ACTION_CARDS,
-			section: actionCardsSection,
+			section: actionsSection,
 			subscribe: this.subscribe.bind(this),
 			traitStore: this.traitStore,
 			getActionsFromGenes: this.getActionsFromGenes.bind(this)
@@ -372,7 +372,7 @@ class CreateAndEditCreature {
 const main = () => {
     const createAndEditCreature = new CreateAndEditCreature({
 		genesSection: document.getElementById('genes-section'),
-		actionCardsSection: document.getElementById('action-cards-section')
+		actionsSection: document.getElementById('action-section')
 	});
 
 	window.addEventListener('popstate', () => {
