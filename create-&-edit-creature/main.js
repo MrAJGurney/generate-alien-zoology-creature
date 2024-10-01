@@ -1,18 +1,14 @@
-import { CREATURE_GENES } from "../source-files/creature-genes.js";
-import { CREATURE_ACTION_CARDS } from "../source-files/creature-action-cards.js";
 import { TRAITS_DETAILS, TraitStore } from "./traits-store.js";
 import { rollD50 } from "../utilities/roll-dice.js";
 
 class ButtonPanel {
 	constructor({
 		traitDetails,
-		availableTraits,
 		section,
 		subscribe,
 		traitStore
 	}) {
 		this.traitDetails = traitDetails;
-		this.availableTraits = availableTraits;
 		this.section = section;
 		this.subscribe = subscribe;
 		this.traitStore = traitStore;
@@ -58,7 +54,7 @@ class ButtonPanel {
 	}
 
     populateDropdown () {
-        this.availableTraits.forEach(({ id, name }) => {
+        this.traitDetails.ITEMS.forEach(({ id, name }) => {
             const newOption = document.createElement('option');
             newOption.value = id;
             newOption.textContent = `${id}: ${name}`;
@@ -95,7 +91,10 @@ class ButtonPanel {
 		const addedIds = this.traitStore.getTraitIds(this.traitDetails.KEY);
 
 		// update add random button
-        this.addRandomButton.disabled = addedIds.length >= this.availableTraits.length;
+		const newMutableTraitAvailableToAdd = this.traitDetails.ITEMS
+			.filter(({id}) => !addedIds.includes(id))
+			.some(({id}) => this.isTraitMutable(id));
+		this.addRandomButton.disabled = !newMutableTraitAvailableToAdd;
 
 		// update add single dropdown
 		 Array.from(this.addSingleDropdown.options).forEach(
@@ -129,7 +128,7 @@ class ButtonPanel {
 
 	renderTable () {
 		const traitIds = this.traitStore.getTraitIds(this.traitDetails.KEY);
-		const traits = traitIds.map(traitId => this.availableTraits.find(({id}) => id === traitId));
+		const traits = traitIds.map(traitId => this.traitDetails.ITEMS.find(({id}) => id === traitId));
 
         this.table.innerHTML = '';
         traits.forEach((trait) => {
@@ -156,6 +155,9 @@ class GenesButtonPanel extends ButtonPanel{
 
 		this.setActionsFromGenes();
 
+		console.log({
+			actionIdsToDelete: this.getActionsFromGenes()
+		})
 		this.traitStore.removeTraitIds([[TRAITS_DETAILS.ACTIONS.KEY, this.getActionsFromGenes()]])
 	}
 
@@ -202,7 +204,7 @@ class ActionsButtonPanel extends ButtonPanel{
 		row.insertCell(4).appendChild(document.createTextNode(
 			this.isTraitMutable(id)
 				? '-'
-				: CREATURE_GENES.find(({actionCard}) => actionCard?.id === id ).name
+				: TRAITS_DETAILS.GENES.ITEMS.find(({actionCard}) => actionCard?.id === id ).name
 			));
 	}
 
@@ -210,7 +212,7 @@ class ActionsButtonPanel extends ButtonPanel{
 		const actionIds = this.traitStore.getTraitIds(this.traitDetails.KEY)
 			.concat(this.getActionsFromGenes())
 			.sort((a, b) => a - b);
-		const traits = actionIds.map(traitId => this.availableTraits.find(({id}) => id === traitId));
+		const traits = actionIds.map(traitId => this.traitDetails.ITEMS.find(({id}) => id === traitId));
 
         this.table.innerHTML = '';
         traits.forEach((trait) => {
@@ -235,7 +237,6 @@ class CreateAndEditCreature {
 
 		this.genesButtonPanel = new GenesButtonPanel({
 			traitDetails: TRAITS_DETAILS.GENES,
-			availableTraits: CREATURE_GENES,
 			section: genesSection,
 			subscribe: this.subscribe.bind(this),
 			traitStore: this.traitStore,
@@ -245,7 +246,6 @@ class CreateAndEditCreature {
 
 		this.actionsButtonPanel = new ActionsButtonPanel({
 			traitDetails: TRAITS_DETAILS.ACTIONS,
-			availableTraits: CREATURE_ACTION_CARDS,
 			section: actionsSection,
 			subscribe: this.subscribe.bind(this),
 			traitStore: this.traitStore,
@@ -270,7 +270,7 @@ class CreateAndEditCreature {
 					}, []);
 
 				const actionIdsFromGenes = geneIds
-					.map((geneId) => CREATURE_GENES.find(({id}) => geneId === id))
+					.map((geneId) => TRAITS_DETAILS.GENES.ITEMS.find(({id}) => geneId === id))
 					.filter(({actionCard}) => actionCard)
 					.map(({actionCard: {id}}) => id);
 
@@ -345,7 +345,7 @@ class CreateAndEditCreature {
 	setActionsFromGenes () {
 		const addedGeneIds = this.traitStore.getTraitIds(TRAITS_DETAILS.GENES.KEY);
 
-		const genesAddingActions = CREATURE_GENES
+		const genesAddingActions = TRAITS_DETAILS.GENES.ITEMS
 			.filter(({actionCard}) => actionCard)
 			.filter(({id}) => addedGeneIds.includes(id));
 

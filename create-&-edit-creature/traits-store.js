@@ -1,13 +1,17 @@
+import { CREATURE_GENES } from "../source-files/creature-genes.js";
+import { CREATURE_ACTION_CARDS } from "../source-files/creature-action-cards.js";
 import { loadIdsFromUrl, saveIdsToUrl } from '../utilities/url-data-store.js'
 
 export const TRAITS_DETAILS = {
     GENES: {
         KEY: 'geneIds',
-        CHANGED_EVENT: 'gene-ids-changed'
+        CHANGED_EVENT: 'gene-ids-changed',
+        ITEMS: CREATURE_GENES
     },
     ACTIONS: {
         KEY: 'actionIds',
-        CHANGED_EVENT: 'action-ids-changed'
+        CHANGED_EVENT: 'action-ids-changed',
+        ITEMS: CREATURE_ACTION_CARDS
     }
 }
 
@@ -99,7 +103,7 @@ export class TraitStore {
                 traitIds.forEach(id => {
                     // looping through it this way so if there are three copies of an id, just two could be deleted rather than all of them
                     const index = this.geneIds.findIndex(geneId => geneId === id);
-if (index < 0) {
+                    if (index < 0) {
                         return;
                     }
                     this.geneIds.splice(index, 1);
@@ -110,7 +114,7 @@ if (index < 0) {
                 traitIds.forEach(id => {
                     // looping through it this way so if there are three copies of an id, just two could be deleted rather than all of them
                     const index = this.actionIds.findIndex(actionId => actionId === id);
-if (index < 0) {
+                    if (index < 0) {
                         return;
                     }
                     this.actionIds.splice(index, 1);
