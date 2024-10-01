@@ -3,37 +3,15 @@ import { rollD50 } from "../utilities/roll-dice.js";
 import { TRAITS_DETAILS, TraitStore } from "./traits-store.js";
 import { GenesButtonPanel, ActionsButtonPanel } from "./button-panel.js";
 
-const LEVEL = 10;
+const DEFAULT_LEVEL = 10;
 
 const BASE_PROFILE = {
-	MOV: {
-		VALUE: 6,
-		SUFFIX: ''
-	},
-	A: {
-		VALUE: 6,
-		SUFFIX: '+'
-	},
-	SHO: {
-		VALUE: 6,
-		SUFFIX: '+'
-	},
-	HP: {
-		VALUE: LEVEL,
-		SUFFIX: ''
-	},
-	DEF: {
-		VALUE: 6,
-		SUFFIX: '+'
-	},
-	NERVE: {
-		VALUE: 6,
-		SUFFIX: '+'
-	},
-	ESC: {
-		VALUE: 8,
-		SUFFIX: '+'
-	},
+	MOV: 6,
+	A: 6,
+	SHO: 6,
+	DEF: 6,
+	NERVE: 6,
+	ESC: 8,
 }
 
 export class CreateAndEditCreature {
@@ -118,6 +96,14 @@ export class CreateAndEditCreature {
 			}
 		);
 
+        this.levelSelectDropdown = generateNewSection.getElementsByClassName('level-dropdown')[0];
+        this.populateDropdown();
+
+		this.levelSelectDropdown.addEventListener(
+			'change',
+			() => this.renderTable()
+		);
+
 		this.subscribe({
             eventTypes: [TRAITS_DETAILS.GENES.CHANGED_EVENT],
             subscriber: this.setActionsFromGenes.bind(this)
@@ -134,6 +120,20 @@ export class CreateAndEditCreature {
         });
 
 		this.reloadUrl();
+    }
+
+    populateDropdown () {
+        Array(30)
+			.fill(null)
+			.map((_, index) => index + 1)
+			.forEach(level => {
+				const newOption = document.createElement('option');
+				newOption.value = level;
+				newOption.textContent = `level ${level}`;
+				this.levelSelectDropdown.appendChild(newOption);
+			});
+
+		this.levelSelectDropdown.value = DEFAULT_LEVEL;
     }
 
 	reloadUrl () {
@@ -196,35 +196,38 @@ export class CreateAndEditCreature {
 		firstRowDescriptionCell.appendChild(document.createTextNode("Creature"))
 		firstRowDescriptionCell.appendChild(document.createElement("br"))
 		firstRowDescriptionCell.appendChild(document.createTextNode("(base stats before modifiers)"));
-		firstRow.insertCell(1).appendChild(document.createTextNode(`${BASE_PROFILE.MOV.VALUE}${BASE_PROFILE.MOV.SUFFIX}`));
-		firstRow.insertCell(2).appendChild(document.createTextNode(`${BASE_PROFILE.A.VALUE}${BASE_PROFILE.A.SUFFIX}`));
-		firstRow.insertCell(3).appendChild(document.createTextNode(`${BASE_PROFILE.SHO.VALUE}${BASE_PROFILE.SHO.SUFFIX}`));
-		firstRow.insertCell(4).appendChild(document.createTextNode(`${BASE_PROFILE.HP.VALUE}${BASE_PROFILE.HP.SUFFIX}`));
-		firstRow.insertCell(5).appendChild(document.createTextNode(`${BASE_PROFILE.DEF.VALUE}${BASE_PROFILE.DEF.SUFFIX}`));
-		firstRow.insertCell(6).appendChild(document.createTextNode(`${BASE_PROFILE.NERVE.VALUE}${BASE_PROFILE.NERVE.SUFFIX}`));
-		firstRow.insertCell(7).appendChild(document.createTextNode(`${BASE_PROFILE.ESC.VALUE}${BASE_PROFILE.ESC.SUFFIX}`));
+		firstRow.insertCell(1).appendChild(document.createTextNode(`${BASE_PROFILE.MOV}`));
+		firstRow.insertCell(2).appendChild(document.createTextNode(`${BASE_PROFILE.A}+`));
+		firstRow.insertCell(3).appendChild(document.createTextNode(`${BASE_PROFILE.SHO}+`));
+		firstRow.insertCell(4).appendChild(document.createTextNode(`${this.levelSelectDropdown.value}`));
+		firstRow.insertCell(5).appendChild(document.createTextNode(`${BASE_PROFILE.DEF}+`));
+		firstRow.insertCell(6).appendChild(document.createTextNode(`${BASE_PROFILE.NERVE}+`));
+		firstRow.insertCell(7).appendChild(document.createTextNode(`${BASE_PROFILE.ESC}+`));
 
 		const profileChanges = geneIds
 			.map(geneId => TRAITS_DETAILS.GENES.ITEMS.find(({id}) => geneId === id))
 			.filter(({profile}) => profile)
 			.map(({profile}) => profile);
 
-		const adjustedProfile = Object.entries(BASE_PROFILE).reduce((adjustedProfile, [key, {VALUE: value}]) => ({
-			...adjustedProfile,
-			[key]: value + profileChanges.map(({[key]: value}) => value ?? 0).reduce((total, value) => total + value, 0)
-		}), {});
+		const adjustedProfile = Object
+			.entries(BASE_PROFILE)
+			.concat([['HP', parseInt(this.levelSelectDropdown.value)]])
+			.reduce((adjustedProfile, [key, value]) => ({
+				...adjustedProfile,
+				[key]: value + profileChanges.map(({[key]: value}) => value ?? 0).reduce((total, value) => total + value, 0)
+			}), {});
 
 		const secondRow = this.table.insertRow();
 		const secondRowDescriptionCell = secondRow.insertCell(0)
 		secondRowDescriptionCell.appendChild(document.createTextNode("Creature"))
 		secondRowDescriptionCell.appendChild(document.createElement("br"))
 		secondRowDescriptionCell.appendChild(document.createTextNode("(after modifiers)"));
-		secondRow.insertCell(1).appendChild(document.createTextNode(`${adjustedProfile.MOV}${BASE_PROFILE.MOV.SUFFIX}`));
-		secondRow.insertCell(2).appendChild(document.createTextNode(`${adjustedProfile.A}${BASE_PROFILE.A.SUFFIX}`));
-		secondRow.insertCell(3).appendChild(document.createTextNode(`${adjustedProfile.SHO}${BASE_PROFILE.SHO.SUFFIX}`));
-		secondRow.insertCell(4).appendChild(document.createTextNode(`${adjustedProfile.HP}${BASE_PROFILE.HP.SUFFIX}`));
-		secondRow.insertCell(5).appendChild(document.createTextNode(`${adjustedProfile.DEF}${BASE_PROFILE.DEF.SUFFIX}`));
-		secondRow.insertCell(6).appendChild(document.createTextNode(`${adjustedProfile.NERVE}${BASE_PROFILE.NERVE.SUFFIX}`));
-		secondRow.insertCell(7).appendChild(document.createTextNode(`${adjustedProfile.ESC}${BASE_PROFILE.ESC.SUFFIX}`));
+		secondRow.insertCell(1).appendChild(document.createTextNode(`${adjustedProfile.MOV}`));
+		secondRow.insertCell(2).appendChild(document.createTextNode(`${adjustedProfile.A}+`));
+		secondRow.insertCell(3).appendChild(document.createTextNode(`${adjustedProfile.SHO}+`));
+		secondRow.insertCell(4).appendChild(document.createTextNode(`${adjustedProfile.HP}`));
+		secondRow.insertCell(5).appendChild(document.createTextNode(`${adjustedProfile.DEF}+`));
+		secondRow.insertCell(6).appendChild(document.createTextNode(`${adjustedProfile.NERVE}+`));
+		secondRow.insertCell(7).appendChild(document.createTextNode(`${adjustedProfile.ESC}+`));
 	}
 }

@@ -17,6 +17,9 @@
 
         <section id="creature-summary-section">
             <h2>Generate New Creature</h2>
+            <label for="level-dropdown">select level:</label>
+            <select id="level-dropdown" class="level-dropdown"></select>
+            <br/>
             <button class="generate-new-random-creature-button">generate new random creature</button>
             <br/>
             <button class="remove-all-genes-and-actions-button">remove all genes and actions</button>
@@ -41,13 +44,12 @@
             <h2>Genes</h2>
             <button class="add-random-button" disabled>add random gene</button>
             <br/>
-            <select class="add-single-dropdown">
+            <label for="genes-section-add-single-dropdown">select gene:</label>
+            <select id="genes-section-add-single-dropdown" class="add-single-dropdown">
                 <option value="" disabled selected>select gene</option>
             </select>
             <button class="add-single-button" disabled>add gene</button>
             <br/>
-            <!-- add a random gene  -->
-            <!-- <button class="add-all-button">add all genes</button> -->
             <button class="remove-all-button" disabled>remove all genes</button>
             <table class="table">
                 <thead>
@@ -67,13 +69,12 @@
             <h2>Actions</h2>
             <button class="add-random-button" disabled>add random action</button>
             <br/>
-            <select class="add-single-dropdown">
+            <label for="action-section-add-single-dropdown">select action:</label>
+            <select id="action-section-add-single-dropdown" class="add-single-dropdown">
                 <option value="" disabled selected>select action</option>
             </select>
             <button class="add-single-button" disabled>add action</button>
             <br/>
-            <!-- add a random actions  -->
-            <!-- <button class="add-all-button">add all action</button> -->
             <button class="remove-all-button" disabled>remove all actions</button>
 
             <table class="table">
