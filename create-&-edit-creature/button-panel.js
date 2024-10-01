@@ -155,9 +155,6 @@ export class GenesButtonPanel extends ButtonPanel{
 
 		this.setActionsFromGenes();
 
-		console.log({
-			actionIdsToDelete: this.getActionsFromGenes()
-		})
 		this.traitStore.removeTraitIds([[TRAITS_DETAILS.ACTIONS.KEY, this.getActionsFromGenes()]])
 	}
 
