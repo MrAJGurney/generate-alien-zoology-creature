@@ -1,6 +1,12 @@
 import { TRAITS_DETAILS } from "./traits-store.js";
 import { rollD50 } from "../utilities/roll-dice.js";
 
+const assertIsNumber = (number) => {
+	if (typeof number !== 'number') {
+		throw new Error(`Must be a number: "${number}" has type ${typeof number}`);
+	}	
+}
+
 export class ButtonPanel {
 	constructor({
 		traitDetails,
@@ -50,6 +56,8 @@ export class ButtonPanel {
 	}
 
 	isTraitMutable (traitId) {
+		assertIsNumber(traitId);
+
 		return true;
 	}
 
@@ -63,10 +71,14 @@ export class ButtonPanel {
     }
 
 	addTraits (traitIds) {
+		traitIds.forEach(traitId => assertIsNumber(traitId));
+
 		this.traitStore.addTraitIds([[this.traitDetails.KEY, traitIds]])
 	}
 
 	removeTraits (traitIds) {
+		traitIds.forEach(traitId => assertIsNumber(traitId));
+
 		this.traitStore.removeTraitIds([[this.traitDetails.KEY, traitIds]])
 	}
 
@@ -105,7 +117,7 @@ export class ButtonPanel {
 
 		// update add single button
 		const selectedTraitId = this.addSingleDropdown.value;
-		const dropdownSelectionValid = selectedTraitId !== "" && this.isTraitMutable(selectedTraitId) && !addedIds.includes(parseInt(selectedTraitId));
+		const dropdownSelectionValid = selectedTraitId !== "" && this.isTraitMutable(parseInt(selectedTraitId)) && !addedIds.includes(parseInt(selectedTraitId));
 		this.addSingleButton.disabled = !dropdownSelectionValid;
 
 		// update remove all button
@@ -117,6 +129,8 @@ export class ButtonPanel {
 	}
 
 	getDeleteRowButtonForTraitId (traitId) {
+		assertIsNumber(traitId);
+
 		const deleteRowButton = document.createElement('button');
 		deleteRowButton.textContent = 'remove';
 		deleteRowButton.onclick = () => this.removeTraits([traitId]);
@@ -189,6 +203,8 @@ export class ActionsButtonPanel extends ButtonPanel{
 	}
 
 	isTraitMutable (actionId) {
+		assertIsNumber(actionId);
+
 		const actionIdsFromGenes = this.getActionsFromGenes();
 		return !actionIdsFromGenes.includes(actionId);
 	}
