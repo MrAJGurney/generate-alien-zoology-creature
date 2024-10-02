@@ -16,10 +16,13 @@ const splitIds = (stringIds) => {
 
 export const loadIdsFromUrl = () => {
     const searchParams = new URLSearchParams(window.location.search);
-    const data = searchParams.entries().reduce((data, [paramName, idsString]) => ({
+
+    const dataReducer = (data, [paramName, idsString]) => ({
         ...data,
         [paramName]: splitIds(idsString)
-    }), {})
+    });
+
+    const data = Array.from(searchParams.entries()).reduce(dataReducer, {})
     
     return data;
 }

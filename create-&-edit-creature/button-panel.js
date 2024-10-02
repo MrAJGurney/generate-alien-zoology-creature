@@ -217,7 +217,7 @@ export class ActionsButtonPanel extends ButtonPanel{
 		row.insertCell(4).appendChild(document.createTextNode(
 			this.isTraitMutable(id)
 				? '-'
-				: TRAITS_DETAILS.GENES.ITEMS.find(({actionCard}) => actionCard?.id === id ).name
+				: TRAITS_DETAILS.GENES.ITEMS.find(({actionCard}) => actionCard && (actionCard.id === id) ).name
 			));
 	}
 
