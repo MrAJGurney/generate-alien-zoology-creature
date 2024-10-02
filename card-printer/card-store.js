@@ -3,9 +3,8 @@ import { EVENT_TYPES } from './event-types.js';
 
 export const CARD_DETAILS = {
     CREATURE_ACTIONS: {
-        KEY: 'creatureActions',
-        SOURCE_TABLE_NAME: '7.2 Creatures: Action Cards table',
-        PARAM_NAME: 'actionCardIds'
+        KEY: 'actionIds',
+        SOURCE_TABLE_NAME: '7.2 Creatures: Action Cards table'
     }
 }
 
@@ -22,7 +21,7 @@ export class CardStore {
 
     reloadUrl () {
         const {
-            [CARD_DETAILS.CREATURE_ACTIONS.PARAM_NAME]: creatureActionCardIds
+            [CARD_DETAILS.CREATURE_ACTIONS.KEY]: creatureActionCardIds
         } = loadIdsFromUrl();
 
         this.creatureActionCardIds = creatureActionCardIds ?? [];
@@ -30,7 +29,7 @@ export class CardStore {
 
     updateUrl () {
         saveIdsToUrl({
-            [CARD_DETAILS.CREATURE_ACTIONS.PARAM_NAME]: this.creatureActionCardIds
+            [CARD_DETAILS.CREATURE_ACTIONS.KEY]: this.creatureActionCardIds
         });
     }
 

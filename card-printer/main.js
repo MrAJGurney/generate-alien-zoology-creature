@@ -1,5 +1,4 @@
 import { CardTable } from "./card-table.js";
-import { EVENT_TYPES } from "./event-types.js";
 
 const main = () => {
     const cardTable = new CardTable({

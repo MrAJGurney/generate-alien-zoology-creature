@@ -12,11 +12,6 @@ export class CardTable {
 
         this.subscribers = [];
 
-        this.subscribe({
-            eventTypes: [EVENT_TYPES.IDS_ADDED, EVENT_TYPES.IDS_REMOVED],
-            subscriber: this.renderTable.bind(this)
-        })
-
         this.cardStore = new CardStore({
             triggerEvent: this.triggerEvent.bind(this),
         });
@@ -29,11 +24,40 @@ export class CardTable {
             subscribeToCardTable: this.subscribe.bind(this),
         });
 
+        this.printCardsButton = document.getElementById('print-cards-button'),
+        this.printCardsButton.addEventListener(
+            'click',
+            () => {
+                const creatureActionCardIds = this.cardStore.getCardIds(CARD_DETAILS.CREATURE_ACTIONS.KEY);
+                const MAX_ID_LENGTH = 2;
+                const joinIds = (ids) => {
+                    const stringIds = ids.map(id => id.toString().padStart(MAX_ID_LENGTH, '0'));
+                    return stringIds.join('');
+                }
+
+                const url = new URL(window.location);
+                url.pathname = 'print-sheet/';
+                url.searchParams.set(CARD_DETAILS.CREATURE_ACTIONS.KEY, joinIds(creatureActionCardIds));
+
+                console.log({url: url.toString()})
+
+                window.location.href = url.toString();
+            }
+        );
+
+        this.subscribe({
+            eventTypes: [EVENT_TYPES.IDS_ADDED, EVENT_TYPES.IDS_REMOVED],
+            subscriber: this.updateButtons.bind(this)
+        })
+
+        this.subscribe({
+            eventTypes: [EVENT_TYPES.IDS_ADDED, EVENT_TYPES.IDS_REMOVED],
+            subscriber: this.renderTable.bind(this)
+        })
+
         this.triggerEvent({
             type: EVENT_TYPES.IDS_ADDED
         });
-
-        this.renderTable();
     }
 
     reloadUrl () {
@@ -54,6 +78,12 @@ export class CardTable {
                 subscriber(event);
             }
         });
+    }
+
+    updateButtons () {
+        const creatureActionCardIds = this.cardStore.getCardIds(CARD_DETAILS.CREATURE_ACTIONS.KEY);
+
+        this.printCardsButton.disabled = creatureActionCardIds.length === 0;
     }
 
     renderTable () {
