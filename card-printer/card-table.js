@@ -3,6 +3,10 @@ import { EVENT_TYPES } from "./event-types.js";
 import { ButtonsPanel } from "./buttons-panel.js";
 import { CardStore, CARD_DETAILS } from "./card-store.js";
 
+const URL_PATH_SEPARATOR = '/';
+
+const PRINT_SHEET_PATH_PART = 'print-sheet';
+
 export class CardTable {
     constructor({
         cardsToPrintTableBody,
@@ -36,10 +40,16 @@ export class CardTable {
                 }
 
                 const url = new URL(window.location);
-                url.pathname = 'print-sheet/';
-                url.searchParams.set(CARD_DETAILS.CREATURE_ACTIONS.KEY, joinIds(creatureActionCardIds));
 
-                console.log({url: url.toString()})
+                const pathParts = url.pathname.split(URL_PATH_SEPARATOR);
+                const newPathname = pathParts
+                    .filter(part => part.length > 0)
+                    .slice(0, -1)
+                    .concat([PRINT_SHEET_PATH_PART, ""])
+                    .join(URL_PATH_SEPARATOR);
+                url.pathname = newPathname;
+
+                url.searchParams.set(CARD_DETAILS.CREATURE_ACTIONS.KEY, joinIds(creatureActionCardIds));
 
                 window.location.href = url.toString();
             }
