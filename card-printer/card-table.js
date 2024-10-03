@@ -30,18 +30,6 @@ export class CardTable {
             eventTypes: [this.eventBus.eventTypes.idsMutated],
             subscriber: this.renderTable.bind(this)
         })
-
-        this.eventBus.triggerEvent({
-            type: this.eventBus.eventTypes.idsMutated
-        });
-    }
-
-    reloadUrl () {
-        this.cardStore.reloadUrl();
-
-        this.eventBus.triggerEvent({
-            type: this.eventBus.eventTypes.idsMutated
-        });
     }
 
     updateButtons () {

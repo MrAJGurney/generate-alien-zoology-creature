@@ -12,14 +12,14 @@ export class CardStore {
                 data: CREATURE_ACTION_CARDS
             }
         }
-
         this.eventBus = eventBus;
-
-        this.eventBus.triggerEvent;
 
         this.creatureActionCardIds = [];
 
-        this.reloadUrl();
+        this.eventBus.subscribe({
+            eventTypes: [this.eventBus.eventTypes.idsMutated],
+            subscriber: this.reloadUrl.bind(this)
+        });
     }
 
     reloadUrl () {

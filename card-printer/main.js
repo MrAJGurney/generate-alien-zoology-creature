@@ -11,9 +11,15 @@ const main = () => {
     new PrintSheet({cardStore, eventBus});
 
     new CardTable({cardStore, eventBus});
+    
+    eventBus.triggerEvent({
+        type: eventBus.eventTypes.idsMutated
+    });
 
     window.addEventListener('popstate', () => {
-        eventBus.triggerEvent(eventBus.eventTypes.idsRemoved);
+        eventBus.triggerEvent({
+            type: eventBus.eventTypes.idsMutated
+        });
     });
 }
 

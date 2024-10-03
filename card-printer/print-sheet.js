@@ -10,9 +10,7 @@ export class PrintSheet {
         this.eventBus.subscribe({
             eventTypes: [this.eventBus.eventTypes.idsMutated],
             subscriber: this.renderCards.bind(this)
-        })
-
-        this.renderCards();
+        });
     }
 
     buildActionCards () {
