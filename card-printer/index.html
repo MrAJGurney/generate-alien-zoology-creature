@@ -3,42 +3,46 @@
     <head>
         <title>Alien Zoology Card Printer</title>
         <link rel="shortcut icon" type="image/x-icon" href="../favicon.ico">
+        <link rel="stylesheet" href="../source-files/scoped-reset.css">
+        <link rel="stylesheet" href="style.css">
         <script type="module" src="../source-files/creature-action-cards.js"></script>
         <script type="module" src="../utilities/url-data-store.js"></script>
-        <script type="module" src="event-types.js"></script>
         <script type="module" src="card-store.js"></script>
         <script type="module" src="buttons-panel.js"></script>
         <script type="module" src="card-table.js"></script>
         <script type="module" src="main.js"></script>
     </head>
     <body>
-        <a href="../">Home</a>
-        <h1>Alien Zoology Card Printer</h1>
-        <section id="creature-action-cards-section">
-            <h2>Creature Action Cards</h2>
-            <select class="add-single-dropdown">
-                <option value="" disabled selected>select a creature action card</option>
-            </select>
-            <button class="add-single-button" disabled>add creature action card</button>
-            <br/>
-            <button class="add-all-button">add all creature action cards</button>
-            <button class="remove-all-button" disabled>remove all creature action cards</button>
-        </section>
-        <h2>Remove All Cards</h2>
-        <button id = "remove-all-button" disabled>remove all cards</button>
-        <h2>Print Cards</h2>
-        <button id = "print-cards-button" disabled>print cards</button>
-        <h2>Cards to Print</h2>
-        <table id="cards-to-print-table">
-            <thead>
-                <tr>
-                    <th>Source Table</th>
-                    <th>Card Number</th>
-                    <th>Card Name</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <div class="no-print">
+            <a href="../">Home</a>
+            <h1>Alien Zoology Card Printer</h1>
+            <section id="creature-action-cards-section">
+                <h2>Creature Action Cards</h2>
+                <select class="add-single-dropdown">
+                    <option value="" disabled selected>select a creature action card</option>
+                </select>
+                <button class="add-single-button" disabled>add creature action card</button>
+                <br/>
+                <button class="add-all-button">add all creature action cards</button>
+                <button class="remove-all-button" disabled>remove all creature action cards</button>
+            </section>
+            <h2>Remove All Cards</h2>
+            <button id = "remove-all-button" disabled>remove all cards</button>
+            <h2>Print Cards</h2>
+            <button id = "print-cards-button" disabled>print cards</button>
+            <h2>Cards to Print</h2>
+            <table id="cards-to-print-table">
+                <thead>
+                    <tr>
+                        <th>Source Table</th>
+                        <th>Card Number</th>
+                        <th>Card Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="card-container apply-reset"></div>
     </body>
 </html>

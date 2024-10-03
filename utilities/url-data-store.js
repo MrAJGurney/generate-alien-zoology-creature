@@ -22,8 +22,8 @@ export const loadIdsFromUrl = () => {
         [paramName]: splitIds(idsString)
     });
 
-    const data = Array.from(searchParams.entries()).reduce(dataReducer, {})
-    
+    const data = Array.from(searchParams.entries()).reduce(dataReducer, {});
+
     return data;
 }
 

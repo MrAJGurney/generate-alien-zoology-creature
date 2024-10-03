@@ -1,18 +1,21 @@
+import { CREATURE_ACTION_CARDS } from "../source-files/creature-action-cards.js";
 import { loadIdsFromUrl, saveIdsToUrl } from '../utilities/url-data-store.js'
-import { EVENT_TYPES } from './event-types.js';
-
-export const CARD_DETAILS = {
-    CREATURE_ACTIONS: {
-        KEY: 'actionIds',
-        SOURCE_TABLE_NAME: '7.2 Creatures: Action Cards table'
-    }
-}
 
 export class CardStore {
     constructor ({
-        triggerEvent
+        eventBus
     }) {
-        this.triggerEvent = triggerEvent;
+        this.cardDetails = {
+            creatureActions: {
+                key: 'actionids',
+                sourceTableName: '7.2 Creatures: Action Cards table',
+                data: CREATURE_ACTION_CARDS
+            }
+        }
+
+        this.eventBus = eventBus;
+
+        this.eventBus.triggerEvent;
 
         this.creatureActionCardIds = [];
 
@@ -21,7 +24,7 @@ export class CardStore {
 
     reloadUrl () {
         const {
-            [CARD_DETAILS.CREATURE_ACTIONS.KEY]: creatureActionCardIds
+            [this.cardDetails.creatureActions.key]: creatureActionCardIds
         } = loadIdsFromUrl();
 
         this.creatureActionCardIds = creatureActionCardIds ?? [];
@@ -29,17 +32,17 @@ export class CardStore {
 
     updateUrl () {
         saveIdsToUrl({
-            [CARD_DETAILS.CREATURE_ACTIONS.KEY]: this.creatureActionCardIds
+            [this.cardDetails.creatureActions.key]: this.creatureActionCardIds
         });
     }
 
     addCardIds (cardKey, cardIds) {
-        if (cardKey === CARD_DETAILS.CREATURE_ACTIONS.KEY) {
+        if (cardKey === this.cardDetails.creatureActions.key) {
             this.creatureActionCardIds = this.creatureActionCardIds.concat(cardIds.map(id => parseInt(id)));
             this.creatureActionCardIds.sort((a, b) => a - b);
             this.updateUrl();
-            this.triggerEvent({
-                type: EVENT_TYPES.IDS_ADDED
+            this.eventBus.triggerEvent({
+                type: this.eventBus.eventTypes.idsMutated
             });
             return;
         }
@@ -48,7 +51,7 @@ export class CardStore {
     }
 
     removeCardIds (cardKey, cardIds) {
-        if (cardKey === CARD_DETAILS.CREATURE_ACTIONS.KEY) {
+        if (cardKey === this.cardDetails.creatureActions.key) {
             cardIds.forEach(id => {
                 // looping through it this way so if there are three copies of an id, just two could be deleted rather than all of them
                 const index = this.creatureActionCardIds.findIndex(cardId => cardId === id);
@@ -56,8 +59,8 @@ export class CardStore {
             });
 
             this.updateUrl();
-            this.triggerEvent({
-                type: EVENT_TYPES.IDS_REMOVED
+            this.eventBus.triggerEvent({
+                type: this.eventBus.eventTypes.idsMutated
             });
             return;
         }
@@ -66,11 +69,11 @@ export class CardStore {
     }
 
     getCardIds (cardKey) {
-        if (cardKey === CARD_DETAILS.CREATURE_ACTIONS.KEY) {
+        if (cardKey === this.cardDetails.creatureActions.key) {
 
             /*
             * Without the shallow copy using the spread operator, there would be problems when removing cards.
-            * 
+            *
             * When "removing all", the code would delete items from the array it was looping through (despite
             * them appearing different from looking at the code), and only some ids would be deleted.
             */

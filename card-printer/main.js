@@ -1,13 +1,19 @@
+import { EventBus } from "./event-bus.js";
+import { CardStore } from "./card-store.js";
 import { CardTable } from "./card-table.js";
+import { PrintSheet } from "./print-sheet.js";
 
 const main = () => {
-    const cardTable = new CardTable({
-        cardsToPrintTableBody: document.querySelector("#cards-to-print-table tbody"),
-        creatureActionCardsSection: document.getElementById('creature-action-cards-section')
-    });
+    const eventBus = new EventBus();
+
+    const cardStore = new CardStore({eventBus});
+
+    new PrintSheet({cardStore, eventBus});
+
+    new CardTable({cardStore, eventBus});
 
     window.addEventListener('popstate', () => {
-        cardTable.reloadUrl();
+        eventBus.triggerEvent(eventBus.eventTypes.idsRemoved);
     });
 }
 

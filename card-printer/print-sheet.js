@@ -1,26 +1,25 @@
-import { CREATURE_ACTION_CARDS } from "../source-files/creature-action-cards.js";
-import { CardStore, CARD_DETAILS } from "./card-store.js";
+export class PrintSheet {
+    constructor ({cardStore, eventBus}) {
+        this.cardStore = cardStore;
+        this.eventBus = eventBus;
 
-class PrintSheet {
-    constructor () {
-        this.cardStore = new CardStore({
-            triggerEvent: () => {}
-        });
+        this.cards = [];
 
-        this.cardStore.reloadUrl();
+        this.cardContainer = document.getElementsByClassName('card-container')[0];
 
-        this.actionIds = this.cardStore.getCardIds(CARD_DETAILS.CREATURE_ACTIONS.KEY);
-
-        this.cards = [
-            ...this.buildActionCards()
-        ];
+        this.eventBus.subscribe({
+            eventTypes: [this.eventBus.eventTypes.idsMutated],
+            subscriber: this.renderCards.bind(this)
+        })
 
         this.renderCards();
     }
 
     buildActionCards () {
-        const actionCardDetails = this.actionIds.map(actionId => {
-            const {id, name, prerequisite, effect, special} = CREATURE_ACTION_CARDS.find(({id}) => actionId === id);
+        const actionIds = this.cardStore.getCardIds(this.cardStore.cardDetails.creatureActions.key);
+
+        const actionCardDetails = actionIds.map(actionId => {
+            const {id, name, prerequisite, effect, special} = this.cardStore.cardDetails.creatureActions.data.find(({id}) => actionId === id);
 
             return {
                 header: `Alien Creature Action Card (${id.toString().padStart(2, '0')})`,
@@ -38,9 +37,12 @@ class PrintSheet {
     }
 
     renderCards () {
-        const cardContainer = document.getElementById('card-container');
-        cardContainer.innerHTML = '';
-        
+        this.cards = [
+            ...this.buildActionCards()
+        ];
+
+        this.cardContainer.innerHTML = '';
+
         this.cards.forEach(({header, title, subtitle, body, special}) => {
             const card = document.createElement('div');
             card.classList.add('card');
@@ -106,13 +108,7 @@ class PrintSheet {
                 }
             }
 
-            cardContainer.appendChild(card);
+            this.cardContainer.appendChild(card);
         })
     }
 }
-
-const main = () => {
-    new PrintSheet();
-}
-
-window.addEventListener('load', main);

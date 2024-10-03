@@ -1,0 +1,114 @@
+
+.card-container {
+    font-family: Garamond , serif;
+   
+    --card-width: 64mm;
+    --card-height: 90mm;
+
+    display: grid;
+    grid-template-columns: repeat(auto-fit, var(--card-width));
+    grid-gap: 2.5mm;
+    padding: 5.0mm;
+   
+    .card {
+        display: flex;
+        flex-direction: column;
+   
+        width: var(--card-width);
+        height: var(--card-height);
+        border: 0.25mm solid #333;
+        padding: 6mm 1.25mm;
+        text-align: center;
+        box-sizing: border-box;
+        background-color: white;
+    }
+   
+    .header {
+        flex-grow: 0;
+   
+        font-size: 2.5mm;
+        text-decoration: underline;
+    }
+   
+    .title {
+        flex-grow: 0;
+   
+        padding-top: 5mm;
+        font-size: 3.75mm;
+        text-decoration: underline;
+        font-weight: bold;
+    }
+   
+    .subtitle {
+        flex-grow: 0;
+   
+        padding-top: 0.5mm;
+        font-size: 3.75mm;
+        font-style: italic;
+    }
+   
+    .body {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+   
+        padding-top: 4.75mm;
+        overflow-y: auto;
+        font-size: 3.2mm;
+   
+        div.spacer {
+            flex-grow: 1;
+       
+            padding-top: 0;
+            max-height: 4.75mm;
+        }
+       
+        p {
+            flex-grow: 0;
+       
+            padding-top: 0;
+        }
+   
+        table.profile-table {
+            flex-grow: 0;
+   
+            font-size: 3.0mm;
+       
+   
+            th, td {
+                padding: 2mm 0;
+   
+                border: 1px solid black;
+            }
+           
+            th {
+                background-color: whitesmoke;
+            }
+        }
+    }
+
+}
+
+@media print {
+    @page {
+        margin: 10mm;
+        size: auto;
+    }
+
+    body {
+        margin: 0;
+    }
+
+    .no-print {
+        display: none;
+    }
+
+    .card-container {
+        grid-gap: 0mm;
+        page-break-inside: avoid;
+    }
+
+    .card {
+        page-break-inside: avoid;
+    }
+}
