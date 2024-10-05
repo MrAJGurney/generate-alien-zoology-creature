@@ -101,6 +101,17 @@ export class CreateAndEditCreature {
 			}
 		);
 
+		this.nameTextInput = generateNewSection.getElementsByClassName('name-text-input')[0];
+		this.nameTextInput.addEventListener(
+			'input',
+			(event) => {
+				const nameText = event.target.value;
+				this.dataStores.creatureNameStore.replace(nameText);
+				this.dataStores.creatureNameStore.saveData();
+			}
+		);
+
+
         this.levelSelectDropdown = generateNewSection.getElementsByClassName('level-dropdown')[0];
         this.populateDropdown();
 
@@ -116,17 +127,23 @@ export class CreateAndEditCreature {
 
 		this.eventBus.subscribe({
 			eventTypes: [this.eventBus.eventTypes.initialisePage],
-			subscriber: this.setActionsFromGenes.bind(this)
-		})
+			subscriber: () => {
+				this.setActionsFromGenes();
+				this.nameTextInput.value = this.dataStores.creatureNameStore.get();
+			}
+		});
 
 		this.eventBus.subscribe({
-            eventTypes: [this.eventBus.eventTypes.initialisePage, this.eventBus.eventTypes.traitIdsMutated, this.eventBus.eventTypes.creatureLevelMutated],
-            subscriber: this.updateButtons.bind(this)
-        });
-
-		this.eventBus.subscribe({
-            eventTypes: [this.eventBus.eventTypes.initialisePage, this.eventBus.eventTypes.traitIdsMutated, this.eventBus.eventTypes.creatureLevelMutated],
-            subscriber: this.renderTable.bind(this)
+            eventTypes: [
+				this.eventBus.eventTypes.initialisePage,
+				this.eventBus.eventTypes.traitIdsMutated,
+				this.eventBus.eventTypes.creatureLevelMutated,
+				this.eventBus.eventTypes.creatureNameMutated
+			],
+            subscriber: () => {
+				this.updateButtons();
+				this.renderTable();
+			}
         });
     }
 

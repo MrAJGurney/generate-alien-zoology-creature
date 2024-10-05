@@ -86,7 +86,6 @@ class DataStore {
             eventTypes: [this.eventBus.eventTypes.initialisePage],
             subscriber: this.loadData.bind(this)
         });
-
     }
 
     loadData () {
@@ -154,7 +153,10 @@ export class IdsStore extends DataStore {
         ids.forEach(id => assertIsNumber(id));
 
         const combinedIds = this.get().concat(ids);
-        const stringifiedData = IdsStore.#stringifyIds(combinedIds);
+
+        const sortedCombinedIds = combinedIds.toSorted((a, b) => a - b);
+
+        const stringifiedData = IdsStore.#stringifyIds(sortedCombinedIds);
         this.sharedDataCache.set(LOCK_SYMBOL, this.dataKey, stringifiedData);
     }
 
@@ -178,7 +180,9 @@ export class IdsStore extends DataStore {
     replace (ids) {
         ids.forEach(id => assertIsNumber(id));
 
-        const stringifiedData = IdsStore.#stringifyIds(ids);
+        const sortedIds = ids.toSorted((a, b) => a - b);
+
+        const stringifiedData = IdsStore.#stringifyIds(sortedIds);
         this.sharedDataCache.set(LOCK_SYMBOL, this.dataKey, stringifiedData);
     }
 }
@@ -216,5 +220,41 @@ export class NumberStore extends DataStore {
 
         const stringifiedData = NumberStore.#stringifyNumber(level);
         this.sharedDataCache.set(LOCK_SYMBOL, this.dataKey, stringifiedData);
+    }
+}
+
+export class TextStore extends DataStore {
+    static #defaultName = '';
+
+    static #decodeText (encodedText) {
+        if (!encodedText) {
+            return TextStore.#defaultName;
+        }
+
+        return decodeURIComponent(encodedText);
+    }
+
+    static #encodeText (decodedText) {
+        if (!decodedText) {
+            encodeURIComponent('');
+        }
+
+        assertIsString(decodedText);
+
+        return encodeURIComponent(decodedText);
+    }
+
+    get () {
+        this.loadData();
+        const encodedText = this.sharedDataCache.get(LOCK_SYMBOL, this.dataKey);
+        const decodedText = TextStore.#decodeText(encodedText);
+        return decodedText;
+    }
+
+    replace (decodedText) {
+        assertIsString(decodedText);
+
+        const encodedText = TextStore.#encodeText(decodedText);
+        this.sharedDataCache.set(LOCK_SYMBOL, this.dataKey, encodedText);
     }
 }

@@ -1,19 +1,21 @@
 import { CREATURE_GENES } from "../source-files/creature-genes.js";
 import { CREATURE_ACTION_CARDS } from "../source-files/creature-action-cards.js";
 import { EventBus } from "../utilities/event-bus.js";
-import { SharedDataCache, IdsStore, NumberStore } from "../utilities/data-store.js";
+import { SharedDataCache, IdsStore, NumberStore, TextStore } from "../utilities/data-store.js";
 import { CreateAndEditCreature } from "./create-and-edit-creature.js";
 
 const EVENT_TYPE_KEYS = {
     INITIALISE_PAGE: 'initialisePage',
     TRAIT_IDS_MUTATED: 'traitIdsMutated',
-    CREATURE_LEVEL_MUTATED: 'creatueLevelMutated'
+    LEVEL_MUTATED: 'levelMutated',
+    NAME_MUTATED: 'nameMutated'
 };
 
 const DATA_STORE_KEYS = {
     GENE_IDS: 'gIds',
     ACTIONS_IDS: 'aIds',
-    CREATURE_LEVEL: 'lvl'
+    LEVEL_NUMBER: 'lvl',
+    NAME_TEXT: 'name'    
 };
 
 const main = () => {
@@ -21,15 +23,17 @@ const main = () => {
         dataKeys:  [
             DATA_STORE_KEYS.GENE_IDS,
             DATA_STORE_KEYS.ACTIONS_IDS,
-            DATA_STORE_KEYS.CREATURE_LEVEL
+            DATA_STORE_KEYS.LEVEL_NUMBER,
+            DATA_STORE_KEYS.NAME_TEXT
         ]
     });
 
     const eventBus = new EventBus({
         eventTypes: {
+            initialisePage: EVENT_TYPE_KEYS.INITIALISE_PAGE,
             traitIdsMutated: EVENT_TYPE_KEYS.TRAIT_IDS_MUTATED,
-            creatureLevelMutated: EVENT_TYPE_KEYS.CREATURE_LEVEL_MUTATED,
-            initialisePage: EVENT_TYPE_KEYS.INITIALISE_PAGE
+            creatureLevelMutated: EVENT_TYPE_KEYS.LEVEL_MUTATED,
+            creatureNameMutated: EVENT_TYPE_KEYS.NAME_MUTATED
         }
     });
 
@@ -50,16 +54,24 @@ const main = () => {
     const creatureLevelStore = new NumberStore({
         sharedDataCache,
         eventBus,
-        dataKey: DATA_STORE_KEYS.CREATURE_LEVEL,
-        eventTypeKey: EVENT_TYPE_KEYS.CREATURE_LEVEL_MUTATED
-    })
+        dataKey: DATA_STORE_KEYS.LEVEL_NUMBER,
+        eventTypeKey: EVENT_TYPE_KEYS.LEVEL_MUTATED
+    });
+
+    const creatureNameStore = new TextStore({
+        sharedDataCache,
+        eventBus,
+        dataKey: DATA_STORE_KEYS.NAME_TEXT,
+        eventTypeKey: EVENT_TYPE_KEYS.NAME_MUTATED
+    });
 
     new CreateAndEditCreature({
         eventBus,
         dataStores: {
             geneIdsStore,
             actionIdsStore,
-            creatureLevelStore
+            creatureLevelStore,
+            creatureNameStore
         },
         traitDetails: {
             genes: CREATURE_GENES,
