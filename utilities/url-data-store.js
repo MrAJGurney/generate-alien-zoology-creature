@@ -1,37 +1,19 @@
-const MAX_ID_LENGTH = 2;
+import { assertIsString } from "./asserts.js";
 
-const joinIds = (ids) => {
-    const stringIds = ids.map(id => id.toString().padStart(MAX_ID_LENGTH, '0'));
-    return stringIds.join('');
-}
-
-const splitIds = (stringIds) => {
-    const digits = stringIds.split('');
-    const tensDigits = digits.filter((_, index) => index % 2 === 0);
-
-    return tensDigits
-        .map((tensDigit, index) => `${tensDigit}${digits[(2*index) + 1]}`)
-        .map(stringId => parseInt(stringId));
-}
-
-export const loadIdsFromUrl = () => {
+export const readSearchParams = () => {
     const searchParams = new URLSearchParams(window.location.search);
 
-    const dataReducer = (data, [paramName, idsString]) => ({
-        ...data,
-        [paramName]: splitIds(idsString)
-    });
+    const searchParamDict = Array
+        .from(searchParams.entries())
+        .reduce((searchParamDict, [key, stringifiedValue]) => ({...searchParamDict, [key]: stringifiedValue}), {});
 
-    const data = Array.from(searchParams.entries()).reduce(dataReducer, {});
-
-    return data;
+    return searchParamDict;
 }
 
-export const saveIdsToUrl = (newParams) => {
-    const currentUrl = new URL(window.location);
-    const currentParams = currentUrl.searchParams;
+export const writeSearchParams = (searchParamDict) => {
+    const url = new URL(window.location);
 
-    Object.entries(newParams).forEach(([paramName, ids]) => currentParams.set(paramName, joinIds(ids)));
+    Object.entries(searchParamDict).forEach(([key, value]) => url.searchParams.set(key, value));
 
-    window.history.pushState(null, '', currentUrl);
+    window.history.pushState(null, '', url);
 }

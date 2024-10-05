@@ -1,6 +1,5 @@
 
 import { rollD50 } from "../utilities/roll-dice.js";
-import { TRAITS_DETAILS, TraitStore } from "./traits-store.js";
 import { GenesButtonPanel, ActionsButtonPanel } from "./button-panel.js";
 
 const DEFAULT_LEVEL = 10;
@@ -15,29 +14,38 @@ const BASE_PROFILE = {
 }
 
 export class CreateAndEditCreature {
-	constructor () {
-        this.subscribers = [];
+	constructor ({
+        eventBus,
+        dataStores,
+		traitDetails,
+		eventTypeKeys
+    }) {
+		this.eventBus = eventBus;
+		this.dataStores = dataStores;
+		this.traitDetails = traitDetails;
+		this.eventTypeKeys = eventTypeKeys;
 
 		this.actionsFromGenes = [];
 
-		this.traitStore = new TraitStore({
-			triggerEvent: this.triggerEvent.bind(this)
-		})
-
 		this.genesButtonPanel = new GenesButtonPanel({
-			traitDetails: TRAITS_DETAILS.GENES,
+			eventBus: this.eventBus,
+			dataStore: this.dataStores.geneIdsStore,
+			traitDetail: this.traitDetails.genes,
+			eventTypeKey: this.eventTypeKeys.traitIdsMutated,
 			section: document.getElementById('genes-section'),
-			subscribe: this.subscribe.bind(this),
-			traitStore: this.traitStore,
 			getActionsFromGenes: this.getActionsFromGenes.bind(this),
 			setActionsFromGenes: this.setActionsFromGenes.bind(this)
 		});
 
 		this.actionsButtonPanel = new ActionsButtonPanel({
-			traitDetails: TRAITS_DETAILS.ACTIONS,
+			eventBus: this.eventBus,
+			dataStore: this.dataStores.actionIdsStore,
+			traitDetail: this.traitDetails.actionCards,
+			eventTypeKey: this.eventTypeKeys.traitIdsMutated,
 			section: document.getElementById('action-section'),
-			subscribe: this.subscribe.bind(this),
-			traitStore: this.traitStore,
+			genes: {
+				traitDetail: this.traitDetails.genes
+			},
 			getActionsFromGenes: this.getActionsFromGenes.bind(this)
 		});
 
@@ -61,7 +69,7 @@ export class CreateAndEditCreature {
 					}, []);
 
 				const actionIdsFromGenes = geneIds
-					.map((geneId) => TRAITS_DETAILS.GENES.ITEMS.find(({id}) => geneId === id))
+					.map((geneId) => this.traitDetails.genes.find(({id}) => geneId === id))
 					.filter(({actionCard}) => actionCard)
 					.map(({actionCard: {id}}) => id);
 
@@ -76,10 +84,11 @@ export class CreateAndEditCreature {
 						return actionIds;
 						}, []);
 
-				this.traitStore.replaceTraitIds([
-					[TRAITS_DETAILS.GENES.KEY, geneIds],
-					[TRAITS_DETAILS.ACTIONS.KEY, actionIds]
-				])
+				this.dataStores.geneIdsStore.replace(geneIds);
+				this.dataStores.actionIdsStore.replace(actionIds);
+
+				// saves for all tables
+				this.dataStores.geneIdsStore.saveData();
 			}
 		);
 
@@ -87,12 +96,14 @@ export class CreateAndEditCreature {
 		this.removeAllGenesAndActionsButton.addEventListener(
 			'click',
 			() => {
-				const geneIds = this.traitStore.getTraitIds(TRAITS_DETAILS.GENES.KEY);
-				const actionIds = this.traitStore.getTraitIds(TRAITS_DETAILS.ACTIONS.KEY);
-				this.traitStore.removeTraitIds([
-					[TRAITS_DETAILS.GENES.KEY, geneIds],
-					[TRAITS_DETAILS.ACTIONS.KEY, actionIds]
-				])
+				const geneIds = this.dataStores.geneIdsStore.get();
+				this.dataStores.geneIdsStore.remove(geneIds);
+
+				const actionIds = this.dataStores.actionIdsStore.get();
+				this.dataStores.actionIdsStore.remove(actionIds);
+
+				// saves for all tables
+				this.dataStores.geneIdsStore.saveData();
 			}
 		);
 
@@ -104,22 +115,15 @@ export class CreateAndEditCreature {
 			() => this.renderTable()
 		);
 
-		this.subscribe({
-            eventTypes: [TRAITS_DETAILS.GENES.CHANGED_EVENT],
-            subscriber: this.setActionsFromGenes.bind(this)
-        });
-
-		this.subscribe({
-            eventTypes: [TRAITS_DETAILS.GENES.CHANGED_EVENT, TRAITS_DETAILS.ACTIONS.CHANGED_EVENT],
+		this.eventBus.subscribe({
+            eventTypes: [this.eventTypeKeys.traitIdsMutated],
             subscriber: this.updateButtons.bind(this)
         });
 
-		this.subscribe({
-            eventTypes: [TRAITS_DETAILS.GENES.CHANGED_EVENT],
+		this.eventBus.subscribe({
+            eventTypes: [this.eventTypeKeys.traitIdsMutated],
             subscriber: this.renderTable.bind(this)
         });
-
-		this.reloadUrl();
     }
 
     populateDropdown () {
@@ -136,42 +140,18 @@ export class CreateAndEditCreature {
 		this.levelSelectDropdown.value = DEFAULT_LEVEL;
     }
 
-	reloadUrl () {
-        this.traitStore.reloadUrl();
-
-        this.triggerEvent({
-            type: TRAITS_DETAILS.GENES.CHANGED_EVENT
-        });
-
-        this.triggerEvent({
-            type: TRAITS_DETAILS.ACTIONS.CHANGED_EVENT
-        });
-    }
-
-    subscribe ({eventTypes, subscriber}) {
-        this.subscribers.push({ eventTypes, subscriber });
-    }
-
-    triggerEvent (event) {
-        this.subscribers.forEach(({ eventTypes, subscriber }) => {
-            if (eventTypes.includes(event.type)) {
-                subscriber(event);
-            }
-        });
-    }
-
 	setActionsFromGenes () {
-		const addedGeneIds = this.traitStore.getTraitIds(TRAITS_DETAILS.GENES.KEY);
+		const addedGeneIds = this.dataStores.geneIdsStore.get();
 
-		const genesAddingActions = TRAITS_DETAILS.GENES.ITEMS
+		const genesAddingActions = this.traitDetails.genes
 			.filter(({actionCard}) => actionCard)
 			.filter(({id}) => addedGeneIds.includes(id));
 
-		this.actionsFromGenes = genesAddingActions.map(({actionCard: {id}}) => id)
+		const actionIdsAddedByGenes = genesAddingActions.map(({actionCard: {id}}) => id);
 
-        this.triggerEvent({
-            type: TRAITS_DETAILS.ACTIONS.CHANGED_EVENT
-        });
+		this.actionsFromGenes = actionIdsAddedByGenes;
+
+		this.dataStores.actionIdsStore.remove(actionIdsAddedByGenes);
 	}
 
 	getActionsFromGenes () {
@@ -179,15 +159,15 @@ export class CreateAndEditCreature {
 	}
 
 	updateButtons () {
-		const addedGenesIds = this.traitStore.getTraitIds(TRAITS_DETAILS.GENES.KEY);
-		const addedActionsIds = this.traitStore.getTraitIds(TRAITS_DETAILS.ACTIONS.KEY);
+		const addedGenesIds = this.dataStores.geneIdsStore.get();
+		const addedActionsIds = this.dataStores.actionIdsStore.get();
 
 		// update remove all button
         this.removeAllGenesAndActionsButton.disabled = !(addedGenesIds.length > 0 || addedActionsIds.length > 0);
 	}
 
 	renderTable () {
-		const geneIds = this.traitStore.getTraitIds(TRAITS_DETAILS.GENES.KEY);
+		const geneIds = this.dataStores.geneIdsStore.get();
 
 		this.table.innerHTML = '';
 
@@ -205,7 +185,7 @@ export class CreateAndEditCreature {
 		firstRow.insertCell(7).appendChild(document.createTextNode(`${BASE_PROFILE.ESC}+`));
 
 		const profileChanges = geneIds
-			.map(geneId => TRAITS_DETAILS.GENES.ITEMS.find(({id}) => geneId === id))
+			.map(geneId => this.traitDetails.genes.find(({id}) => geneId === id))
 			.filter(({profile}) => profile)
 			.map(({profile}) => profile);
 

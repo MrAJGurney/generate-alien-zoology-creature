@@ -1,23 +1,19 @@
-import { TRAITS_DETAILS } from "./traits-store.js";
 import { rollD50 } from "../utilities/roll-dice.js";
-
-const assertIsNumber = (number) => {
-	if (typeof number !== 'number') {
-		throw new Error(`Must be a number: "${number}" has type ${typeof number}`);
-	}	
-}
+import { assertIsNumber } from "../utilities/asserts.js";
 
 export class ButtonPanel {
 	constructor({
-		traitDetails,
-		section,
-		subscribe,
-		traitStore
+		eventBus,
+		dataStore,
+		traitDetail,
+		eventTypeKey,
+		section
 	}) {
-		this.traitDetails = traitDetails;
+		this.eventBus = eventBus;
+		this.dataStore = dataStore;
+		this.traitDetail = traitDetail;
+		this.eventTypeKey = eventTypeKey;
 		this.section = section;
-		this.subscribe = subscribe;
-		this.traitStore = traitStore;
 
 		this.addRandomButton = section.getElementsByClassName('add-random-button')[0];
         this.addSingleDropdown = section.getElementsByClassName('add-single-dropdown')[0];
@@ -29,7 +25,10 @@ export class ButtonPanel {
 
 		this.addRandomButton.addEventListener(
 			'click',
-			() => this.addRandomTrait()
+			() => {
+				const newTraits = this.newRandomMutableTraits(1);
+				this.addTraits(newTraits);
+			}
 		);
 
         this.addSingleDropdown.addEventListener('change', () => this.updateButtons());
@@ -41,16 +40,16 @@ export class ButtonPanel {
 
         this.removeAllButton.addEventListener(
 			'click',
-			() => this.removeAllTraits()
+			() => this.removeAll()
 		);
 
-        this.subscribe({
-            eventTypes: [this.traitDetails.CHANGED_EVENT],
+        this.eventBus.subscribe({
+            eventTypes: [eventTypeKey],
             subscriber: this.renderTable.bind(this)
         });
 
-		this.subscribe({
-            eventTypes: [this.traitDetails.CHANGED_EVENT],
+		this.eventBus.subscribe({
+            eventTypes: [eventTypeKey],
             subscriber: this.updateButtons.bind(this)
         });
 	}
@@ -62,7 +61,7 @@ export class ButtonPanel {
 	}
 
     populateDropdown () {
-        this.traitDetails.ITEMS.forEach(({ id, name }) => {
+        this.traitDetail.forEach(({ id, name }) => {
             const newOption = document.createElement('option');
             newOption.value = id;
             newOption.textContent = `${id}: ${name}`;
@@ -73,37 +72,49 @@ export class ButtonPanel {
 	addTraits (traitIds) {
 		traitIds.forEach(traitId => assertIsNumber(traitId));
 
-		this.traitStore.addTraitIds([[this.traitDetails.KEY, traitIds]])
+		this.dataStore.add(traitIds)
+		this.dataStore.saveData();
 	}
 
-	removeTraits (traitIds) {
+	remove (traitIds) {
 		traitIds.forEach(traitId => assertIsNumber(traitId));
 
-		this.traitStore.removeTraitIds([[this.traitDetails.KEY, traitIds]])
+		this.dataStore.remove(traitIds)
+		this.dataStore.saveData();
 	}
 
-	addRandomTrait () {
-		const traitIds = this.traitStore.getTraitIds(this.traitDetails.KEY);
+	newRandomMutableTraits (traitCount) {
+		const newTraitIds = [];
+		const oldTraitIds = this.dataStore.get();
 
-		// this is not a good implementation for generating a new trait, but it is functional and readable
-		let newTraitId;
-		do {
-			newTraitId = rollD50();
-		} while (!this.isTraitMutable(newTraitId) || traitIds.includes(newTraitId))
+		while (newTraitIds.length < traitCount) {
+			let newTraitId;
 
-		this.addTraits([newTraitId]);
+			// this is not a good implementation for generating a new trait, but it is functional and readable
+			do {
+				newTraitId = rollD50();
+			} while (
+				!this.isTraitMutable(newTraitId)
+				|| newTraitIds.includes(newTraitId)
+				|| oldTraitIds.includes(newTraitId)
+			)
+
+			newTraitIds.push(newTraitId);
+		}
+
+		return(newTraitIds);
 	}
 
-	removeAllTraits () {
-		const unlockedIds = this.traitStore.getTraitIds(this.traitDetails.KEY).filter(id => this.isTraitMutable(id));
-		this.removeTraits(unlockedIds);
+	removeAll () {
+		this.dataStore.replace([]);
+		this.dataStore.saveData();
 	}
 
 	updateButtons () {
-		const addedIds = this.traitStore.getTraitIds(this.traitDetails.KEY);
+		const addedIds = this.dataStore.get();
 
 		// update add random button
-		const newMutableTraitAvailableToAdd = this.traitDetails.ITEMS
+		const newMutableTraitAvailableToAdd = this.traitDetail
 			.filter(({id}) => !addedIds.includes(id))
 			.some(({id}) => this.isTraitMutable(id));
 		this.addRandomButton.disabled = !newMutableTraitAvailableToAdd;
@@ -133,7 +144,8 @@ export class ButtonPanel {
 
 		const deleteRowButton = document.createElement('button');
 		deleteRowButton.textContent = 'remove';
-		deleteRowButton.onclick = () => this.removeTraits([traitId]);
+		deleteRowButton.onclick = () => this.remove([traitId]);
+	
 		if (!this.isTraitMutable(traitId)) {
 			deleteRowButton.disabled = true;
 		}
@@ -141,8 +153,8 @@ export class ButtonPanel {
 	}
 
 	renderTable () {
-		const traitIds = this.traitStore.getTraitIds(this.traitDetails.KEY);
-		const traits = traitIds.map(traitId => this.traitDetails.ITEMS.find(({id}) => id === traitId));
+		const traitIds = this.dataStore.get();
+		const traits = traitIds.map(traitId => this.traitDetail.find(({id}) => id === traitId));
 
         this.table.innerHTML = '';
         traits.forEach((trait) => {
@@ -165,17 +177,21 @@ export class GenesButtonPanel extends ButtonPanel{
 	}
 
 	addTraits (geneIds) {
-		super.addTraits(geneIds);
+		geneIds.forEach(geneId => assertIsNumber(geneId));
 
+		this.dataStore.add(geneIds);
 		this.setActionsFromGenes();
 
-		this.traitStore.removeTraitIds([[TRAITS_DETAILS.ACTIONS.KEY, this.getActionsFromGenes()]])
+		this.dataStore.saveData();
 	}
 
-	removeTraits (geneIds) {
-		super.removeTraits(geneIds);
+	remove (geneIds) {
+		geneIds.forEach(geneId => assertIsNumber(geneId));
 
+		this.dataStore.remove(geneIds)
 		this.setActionsFromGenes();
+
+		this.dataStore.saveData();
 	}
 
 	addCellsToRow (row, {id, name, description, effect }) {
@@ -189,17 +205,14 @@ export class GenesButtonPanel extends ButtonPanel{
 
 export class ActionsButtonPanel extends ButtonPanel{
 	constructor ({
+		genes,
 		getActionsFromGenes,
 		...params
 	}) {
 		super(params);
 
+		this.genes = genes;
 		this.getActionsFromGenes = getActionsFromGenes;
-
-		this.subscribe({
-            eventTypes: [TRAITS_DETAILS.GENES.CHANGED_EVENT],
-            subscriber: this.renderTable.bind(this)
-        });
 	}
 
 	isTraitMutable (actionId) {
@@ -217,17 +230,17 @@ export class ActionsButtonPanel extends ButtonPanel{
 		row.insertCell(4).appendChild(document.createTextNode(
 			this.isTraitMutable(id)
 				? '-'
-				: TRAITS_DETAILS.GENES.ITEMS.find(({actionCard}) => actionCard && (actionCard.id === id) ).name
+				: this.genes.traitDetail.find(({actionCard}) => actionCard && (actionCard.id === id) ).name
 			));
 	}
 
 	renderTable () {
-		const actionIds = this.traitStore.getTraitIds(this.traitDetails.KEY)
+		const actionIds = this.dataStore.get()
 			.concat(this.getActionsFromGenes())
 			.sort((a, b) => a - b);
-		const traits = actionIds.map(traitId => this.traitDetails.ITEMS.find(({id}) => id === traitId));
+		const traits = actionIds.map(traitId => this.traitDetail.find(({id}) => id === traitId));
 
-        this.table.innerHTML = '';
+		this.table.innerHTML = '';
         traits.forEach((trait) => {
 			const row = this.table.insertRow();
 			this.addCellsToRow(row, trait);

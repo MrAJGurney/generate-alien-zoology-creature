@@ -1,15 +1,19 @@
 export class ButtonsPanel {
     constructor({
-        section,
+        eventBus,
         cardStore,
-        eventBus
+        cardData,
+        eventTypeKey,
+        section
     }) {
-        this.section = section;
-        this.cardStore = cardStore;
         this.eventBus = eventBus;
+        this.cardStore = cardStore;
+        this.cardData = cardData;
+        this.eventTypeKey = eventTypeKey;
+        this.section = section;
 
         this.eventBus.subscribe({
-            eventTypes: [this.eventBus.eventTypes.idsMutated],
+            eventTypes: [this.eventTypeKey],
             subscriber: this.updateButtons.bind(this)
         })
 
@@ -27,29 +31,23 @@ export class ButtonsPanel {
         });
 
         this.addSingleButton.addEventListener('click', () => {
-            this.cardStore.addCardIds(
-                this.cardStore.cardDetails.creatureActions.key,
-                [this.addSingleDropdown.value]
-            );
+            this.cardStore.add([parseInt(this.addSingleDropdown.value)]);
+            this.cardStore.saveData();
         });
 
         this.addAllButton.addEventListener('click', () => {
-            this.cardStore.addCardIds(
-                this.cardStore.cardDetails.creatureActions.key,
-                this.cardStore.cardDetails.creatureActions.data.map(({id}) => id)
-            );
+            this.cardStore.add(this.cardData.map(({id}) => id));
+            this.cardStore.saveData();
         });
 
         this.removeAllButton.addEventListener('click', () => {
-            this.cardStore.removeCardIds(
-                this.cardStore.cardDetails.creatureActions.key,
-                this.cardStore.getCardIds(this.cardStore.cardDetails.creatureActions.key)
-            );
+            this.cardStore.replace([]);
+            this.cardStore.saveData();
         });
     }
 
     populateDropdown() {
-        this.cardStore.cardDetails.creatureActions.data.forEach(({ id, name }) => {
+        this.cardData.forEach(({ id, name }) => {
             const newOption = document.createElement('option');
             newOption.value = id;
             newOption.textContent = `${id}: ${name}`;
@@ -58,7 +56,7 @@ export class ButtonsPanel {
     }
 
     updateButtons () {
-        const cardIdsExist = this.cardStore.getCardIds(this.cardStore.cardDetails.creatureActions.key).length > 0;
+        const cardIdsExist = this.cardStore.get().length > 0;
         this.removeAllButton.disabled = !cardIdsExist;
     }
 }
