@@ -13,6 +13,9 @@ export const readSearchParams = () => {
 export const writeSearchParams = (searchParamDict) => {
     const url = new URL(window.location);
 
+    Object.keys(searchParamDict).forEach(key => assertIsString(key));
+    Object.values(searchParamDict).forEach(value => assertIsString(value));
+
     Object.entries(searchParamDict).forEach(([key, value]) => url.searchParams.set(key, value));
 
     window.history.pushState(null, '', url);
