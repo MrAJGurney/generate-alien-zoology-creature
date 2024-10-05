@@ -3,16 +3,12 @@ import { assertIsNumber } from "../utilities/asserts.js";
 
 export class ButtonPanel {
 	constructor({
-		eventBus,
 		dataStore,
 		traitDetail,
-		eventTypeKey,
 		section
 	}) {
-		this.eventBus = eventBus;
 		this.dataStore = dataStore;
 		this.traitDetail = traitDetail;
-		this.eventTypeKey = eventTypeKey;
 		this.section = section;
 
 		this.addRandomButton = section.getElementsByClassName('add-random-button')[0];
@@ -42,16 +38,6 @@ export class ButtonPanel {
 			'click',
 			() => this.removeAll()
 		);
-
-        this.eventBus.subscribe({
-            eventTypes: [eventTypeKey],
-            subscriber: this.renderTable.bind(this)
-        });
-
-		this.eventBus.subscribe({
-            eventTypes: [eventTypeKey],
-            subscriber: this.updateButtons.bind(this)
-        });
 	}
 
 	isTraitMutable (traitId) {

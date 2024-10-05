@@ -17,31 +17,25 @@ export class CreateAndEditCreature {
 	constructor ({
         eventBus,
         dataStores,
-		traitDetails,
-		eventTypeKeys
+		traitDetails
     }) {
 		this.eventBus = eventBus;
 		this.dataStores = dataStores;
 		this.traitDetails = traitDetails;
-		this.eventTypeKeys = eventTypeKeys;
 
 		this.actionsFromGenes = [];
 
 		this.genesButtonPanel = new GenesButtonPanel({
-			eventBus: this.eventBus,
 			dataStore: this.dataStores.geneIdsStore,
 			traitDetail: this.traitDetails.genes,
-			eventTypeKey: this.eventTypeKeys.traitIdsMutated,
 			section: document.getElementById('genes-section'),
 			getActionsFromGenes: this.getActionsFromGenes.bind(this),
 			setActionsFromGenes: this.setActionsFromGenes.bind(this)
 		});
 
 		this.actionsButtonPanel = new ActionsButtonPanel({
-			eventBus: this.eventBus,
 			dataStore: this.dataStores.actionIdsStore,
 			traitDetail: this.traitDetails.actionCards,
-			eventTypeKey: this.eventTypeKeys.traitIdsMutated,
 			section: document.getElementById('action-section'),
 			genes: {
 				traitDetail: this.traitDetails.genes
@@ -112,16 +106,26 @@ export class CreateAndEditCreature {
 
 		this.levelSelectDropdown.addEventListener(
 			'change',
-			() => this.renderTable()
+			() => {
+				const level = parseInt(this.levelSelectDropdown.value);
+				this.dataStores.creatureLevelStore.replace(level);
+				this.dataStores.creatureLevelStore.saveData();
+				this.renderTable()
+			}
 		);
 
 		this.eventBus.subscribe({
-            eventTypes: [this.eventTypeKeys.traitIdsMutated],
+			eventTypes: [this.eventBus.eventTypes.initialisePage],
+			subscriber: this.setActionsFromGenes.bind(this)
+		})
+
+		this.eventBus.subscribe({
+            eventTypes: [this.eventBus.eventTypes.initialisePage, this.eventBus.eventTypes.traitIdsMutated, this.eventBus.eventTypes.creatureLevelMutated],
             subscriber: this.updateButtons.bind(this)
         });
 
 		this.eventBus.subscribe({
-            eventTypes: [this.eventTypeKeys.traitIdsMutated],
+            eventTypes: [this.eventBus.eventTypes.initialisePage, this.eventBus.eventTypes.traitIdsMutated, this.eventBus.eventTypes.creatureLevelMutated],
             subscriber: this.renderTable.bind(this)
         });
     }
@@ -162,8 +166,14 @@ export class CreateAndEditCreature {
 		const addedGenesIds = this.dataStores.geneIdsStore.get();
 		const addedActionsIds = this.dataStores.actionIdsStore.get();
 
+		// update level select dropdown
+		this.levelSelectDropdown.value = this.dataStores.creatureLevelStore.get();
+
 		// update remove all button
         this.removeAllGenesAndActionsButton.disabled = !(addedGenesIds.length > 0 || addedActionsIds.length > 0);
+
+		this.genesButtonPanel.updateButtons();
+		this.actionsButtonPanel.updateButtons();
 	}
 
 	renderTable () {
@@ -179,7 +189,7 @@ export class CreateAndEditCreature {
 		firstRow.insertCell(1).appendChild(document.createTextNode(`${BASE_PROFILE.MOV}`));
 		firstRow.insertCell(2).appendChild(document.createTextNode(`${BASE_PROFILE.A}+`));
 		firstRow.insertCell(3).appendChild(document.createTextNode(`${BASE_PROFILE.SHO}+`));
-		firstRow.insertCell(4).appendChild(document.createTextNode(`${this.levelSelectDropdown.value}`));
+		firstRow.insertCell(4).appendChild(document.createTextNode(`${this.dataStores.creatureLevelStore.get()}`));
 		firstRow.insertCell(5).appendChild(document.createTextNode(`${BASE_PROFILE.DEF}+`));
 		firstRow.insertCell(6).appendChild(document.createTextNode(`${BASE_PROFILE.NERVE}+`));
 		firstRow.insertCell(7).appendChild(document.createTextNode(`${BASE_PROFILE.ESC}+`));
@@ -191,7 +201,7 @@ export class CreateAndEditCreature {
 
 		const adjustedProfile = Object
 			.entries(BASE_PROFILE)
-			.concat([['HP', parseInt(this.levelSelectDropdown.value)]])
+			.concat([['HP', this.dataStores.creatureLevelStore.get()]])
 			.reduce((adjustedProfile, [key, value]) => ({
 				...adjustedProfile,
 				[key]: value + profileChanges.map(({[key]: value}) => value ?? 0).reduce((total, value) => total + value, 0)
@@ -209,5 +219,8 @@ export class CreateAndEditCreature {
 		secondRow.insertCell(5).appendChild(document.createTextNode(`${adjustedProfile.DEF}+`));
 		secondRow.insertCell(6).appendChild(document.createTextNode(`${adjustedProfile.NERVE}+`));
 		secondRow.insertCell(7).appendChild(document.createTextNode(`${adjustedProfile.ESC}+`));
+
+		this.genesButtonPanel.renderTable();
+		this.actionsButtonPanel.renderTable();
 	}
 }

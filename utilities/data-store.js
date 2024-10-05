@@ -4,13 +4,16 @@ import { assertIsNumber, assertIsString } from "./asserts.js";
 const LOCK_SYMBOL = Symbol("prevents non DataStore classes from called SharedDataCache functions");
 
 export class SharedDataCache {
+    #dataKeys;
+    #stringifiedDataDict;
+
     constructor ({
         dataKeys,
     }) {
-        this.dataKeys = dataKeys;
-        this.dataKeys.forEach(key => assertIsString(key));
+        this.#dataKeys = dataKeys;
+        this.#dataKeys.forEach(key => assertIsString(key));
 
-        this.stringifiedDataDict = {};
+        this.#stringifiedDataDict = {};
     }
 
     get (lockSymbol, key) {
@@ -20,11 +23,11 @@ export class SharedDataCache {
 
         assertIsString(key);
 
-        if (!this.dataKeys.includes(key)) {
-            throw new Error(`Invalid key: Key must me one of ${this.dataKeys}: ${key}`)
+        if (!this.#dataKeys.includes(key)) {
+            throw new Error(`Invalid key: Key must me one of ${this.#dataKeys}: ${key}`)
         }
 
-        const data = this.stringifiedDataDict[key] ?? '';
+        const data = this.#stringifiedDataDict[key] ?? '';
 
         return data;
     }
@@ -36,13 +39,13 @@ export class SharedDataCache {
 
         assertIsString(key);
 
-        if (!this.dataKeys.includes(key)) {
-            throw new Error(`Invalid key: Key must me one of ${this.dataKeys}: ${key}`)
+        if (!this.#dataKeys.includes(key)) {
+            throw new Error(`Invalid key: Key must me one of ${this.#dataKeys}: ${key}`)
         }
         
         assertIsString(data);
 
-        this.stringifiedDataDict[key] = data;      
+        this.#stringifiedDataDict[key] = data;
     }
 
     populateDataCacheFromSearchParams (lockSymbol) {
@@ -50,7 +53,7 @@ export class SharedDataCache {
             throw new Error("Do not call SharedDataCache from non DataStore functions!");
         }
 
-        this.stringifiedDataDict = readSearchParams();
+        this.#stringifiedDataDict = readSearchParams();
     }
 
     persistDataCacheToSearchParams (lockSymbol) {
@@ -58,11 +61,16 @@ export class SharedDataCache {
             throw new Error("Do not call SharedDataCache from non DataStore functions!");
         }
 
-        writeSearchParams(this.stringifiedDataDict);
+        writeSearchParams(this.#stringifiedDataDict);
     }
 }
 
 class DataStore {
+    sharedDataCache;
+    eventBus;
+    dataKey;
+    eventTypeKey;
+
     constructor ({
         sharedDataCache,
         eventBus,
@@ -75,18 +83,10 @@ class DataStore {
         this.eventTypeKey = eventTypeKey;
 
         this.eventBus.subscribe({
-            eventTypes: [this.eventTypeKey],
+            eventTypes: [this.eventBus.eventTypes.initialisePage],
             subscriber: this.loadData.bind(this)
         });
 
-    }
-
-    static _parseSearchParam () {
-		throw new Error(`"parseSearchParam" does not have an implementation`);
-    }
-
-    static _stringifySearchParam () {
-		throw new Error(`"stringifySearchParam" does not have an implementation`);
     }
 
     loadData () {
@@ -119,12 +119,12 @@ class DataStore {
 }
 
 export class IdsStore extends DataStore {
-    static #parseSearchParam (stringifiedData) {
-        if (!stringifiedData) {
+    static #parseIds (stringifiedIds) {
+        if (!stringifiedIds) {
             return [];
         }
 
-        const digits = stringifiedData.split('');
+        const digits = stringifiedIds.split('');
         const tensDigits = digits.filter((_, index) => index % 2 === 0);
 
         return tensDigits
@@ -132,21 +132,21 @@ export class IdsStore extends DataStore {
             .map(stringId => parseInt(stringId));
     }
 
-    static #stringifySearchParam (parsedData) {
-        if (!parsedData) {
+    static #stringifyIds (parsedIds) {
+        if (!parsedIds) {
             return '';
         }
 
         const idLength = 2;
 
-        const stringIds = parsedData.map(id => id.toString().padStart(idLength, '0'));
+        const stringIds = parsedIds.map(id => id.toString().padStart(idLength, '0'));
 
         return stringIds.join('');
     }
 
     get () {
         const stringifiedData = this.sharedDataCache.get(LOCK_SYMBOL, this.dataKey);
-        const parsedData = IdsStore.#parseSearchParam(stringifiedData);
+        const parsedData = IdsStore.#parseIds(stringifiedData);
         return [...parsedData];
     }
 
@@ -154,33 +154,67 @@ export class IdsStore extends DataStore {
         ids.forEach(id => assertIsNumber(id));
 
         const combinedIds = this.get().concat(ids);
-        const stringifiedData = IdsStore.#stringifySearchParam(combinedIds);
+        const stringifiedData = IdsStore.#stringifyIds(combinedIds);
         this.sharedDataCache.set(LOCK_SYMBOL, this.dataKey, stringifiedData);
     }
 
     remove (ids) {
-        const x = [...ids];
-
         ids.forEach(id => assertIsNumber(id));
 
         const currentIds = this.get();
 
-        const y = [...currentIds];
-
-        ids.forEach(id => {
+        ids.forEach(idToRemove => {
             // looping through it this way so if there are three copies of an id, just two could be deleted rather than all of them
-            const index = currentIds.findIndex(cardId => cardId === id);
-            currentIds.splice(index, 1);
+            const idIndexToRemove = currentIds.findIndex(currentId => currentId === idToRemove);
+            if (idIndexToRemove >= 0) {
+                currentIds.splice(idIndexToRemove, 1);
+            }
         });
 
-        const stringifiedData = IdsStore.#stringifySearchParam(currentIds);
+        const stringifiedData = IdsStore.#stringifyIds(currentIds);
         this.sharedDataCache.set(LOCK_SYMBOL, this.dataKey, stringifiedData);
     }
 
     replace (ids) {
         ids.forEach(id => assertIsNumber(id));
 
-        const stringifiedData = IdsStore.#stringifySearchParam(ids);
+        const stringifiedData = IdsStore.#stringifyIds(ids);
+        this.sharedDataCache.set(LOCK_SYMBOL, this.dataKey, stringifiedData);
+    }
+}
+
+export class NumberStore extends DataStore {
+    static #defaultLevel = 10;
+
+    static #parseNumber (stringifiedNumber) {
+        if (!stringifiedNumber) {
+            return NumberStore.#defaultLevel;
+        }
+
+        return parseInt(stringifiedNumber);
+    }
+
+    static #stringifyNumber (parsedNumber) {
+        if (!parsedNumber) {
+            return '';
+        }
+
+        assertIsNumber(parsedNumber);
+
+        return parsedNumber.toString();
+    }
+
+    get () {
+        this.loadData();
+        const stringifiedData = this.sharedDataCache.get(LOCK_SYMBOL, this.dataKey);
+        const parsedData = NumberStore.#parseNumber(stringifiedData);
+        return parsedData;
+    }
+
+    replace (level) {
+        assertIsNumber(level);
+
+        const stringifiedData = NumberStore.#stringifyNumber(level);
         this.sharedDataCache.set(LOCK_SYMBOL, this.dataKey, stringifiedData);
     }
 }

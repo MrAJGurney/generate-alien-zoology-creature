@@ -4,27 +4,32 @@ import { SharedDataCache, IdsStore } from "../utilities/data-store.js";
 import { AddRemoveCards as AddRemoveCards } from "./card-table.js";
 import { CardPrintSheet } from "./card-print-sheet.js";
 
-const ACTION_KEYS = {
-    DATA_STORE: 'actionIds',
-    EVENT_TYPE: 'actionIds'
+const EVENT_TYPE_KEYS = {
+    INITIALISE_PAGE: 'initialisePage',
+    ACTION_CARD_IDS_MUTATED: 'traitIdsMutated',
+};
+
+const DATA_STORE_KEYS = {
+    ACTION_CARD_IDS: 'aIds'
 }
 
 const main = () => {
     const eventBus = new EventBus({
         eventTypes: {
-            actionIdsMutated: ACTION_KEYS.EVENT_TYPE
+            actionIdsMutated: EVENT_TYPE_KEYS.ACTION_CARD_IDS_MUTATED,
+            initialisePage: EVENT_TYPE_KEYS.INITIALISE_PAGE
         }
     });
 
     const sharedDataCache = new SharedDataCache({
-        dataKeys: [ACTION_KEYS.DATA_STORE]
+        dataKeys: [DATA_STORE_KEYS.ACTION_CARD_IDS]
     });
 
     const actionIdsStore = new IdsStore({
         eventBus,
         sharedDataCache,
-        dataKey: ACTION_KEYS.DATA_STORE,
-        eventTypeKey: ACTION_KEYS.EVENT_TYPE
+        dataKey: DATA_STORE_KEYS.ACTION_CARD_IDS,
+        eventTypeKey: EVENT_TYPE_KEYS.ACTION_CARD_IDS_MUTATED
     });
 
     new AddRemoveCards({
@@ -39,7 +44,7 @@ const main = () => {
             actionDeckLabel: '7.2 Creatures: Action Cards table'
         },
         eventTypeKeys: {
-            actionIdsMutated: ACTION_KEYS.EVENT_TYPE
+            actionIdsMutated: EVENT_TYPE_KEYS.ACTION_CARD_IDS_MUTATED
         }
     });
 
@@ -52,17 +57,17 @@ const main = () => {
             actionCards: CREATURE_ACTION_CARDS
         },
         eventTypeKeys: {
-            actionIdsMutated: ACTION_KEYS.EVENT_TYPE
+            actionIdsMutated: EVENT_TYPE_KEYS.ACTION_CARD_IDS_MUTATED
         }
     });
     
     eventBus.triggerEvent({
-        type: ACTION_KEYS.EVENT_TYPE
+        type: EVENT_TYPE_KEYS.ACTION_CARD_IDS_MUTATED
     });
 
     window.addEventListener('popstate', () => {
         eventBus.triggerEvent({
-            type: ACTION_KEYS.EVENT_TYPE
+            type: EVENT_TYPE_KEYS.ACTION_CARD_IDS_MUTATED
         });
     });
 }
