@@ -1,8 +1,12 @@
 import { assertIsString } from "../utilities/asserts.js";
 
 export class EventBus {
+    #subscribers;
+
+    eventTypes;
+
     constructor ({ eventTypes }) {
-        this.subscribers = []
+        this.#subscribers = []
 
         this.eventTypes = eventTypes;
     }
@@ -16,7 +20,7 @@ export class EventBus {
             }
         });
 
-        this.subscribers.push({ eventTypes, subscriber });
+        this.#subscribers.push({ eventTypes, subscriber });
     }
 
     triggerEvent (event) {
@@ -32,7 +36,7 @@ export class EventBus {
             throw new Error(`Invalid event type: Event type does not match the list of valid event types: ${JSON.stringify(event)}`);
         }
 
-        this.subscribers.forEach(({ eventTypes, subscriber }) => {
+        this.#subscribers.forEach(({ eventTypes, subscriber }) => {
             if (eventTypes.includes(event.type)) {
                 subscriber(event);
             }

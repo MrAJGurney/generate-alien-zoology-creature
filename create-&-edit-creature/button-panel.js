@@ -2,6 +2,16 @@ import { rollD50 } from "../utilities/roll-dice.js";
 import { assertIsNumber } from "../utilities/asserts.js";
 
 export class ButtonPanel {
+	#section;
+	#addRandomButton;
+	#addSingleDropdown;
+	#addSingleButton;
+	#removeAllButton;
+
+	dataStore;
+	traitDetail;
+	table;
+
 	constructor({
 		dataStore,
 		traitDetail,
@@ -9,17 +19,17 @@ export class ButtonPanel {
 	}) {
 		this.dataStore = dataStore;
 		this.traitDetail = traitDetail;
-		this.section = section;
+		this.#section = section;
 
-		this.addRandomButton = section.getElementsByClassName('add-random-button')[0];
-        this.addSingleDropdown = section.getElementsByClassName('add-single-dropdown')[0];
-        this.addSingleButton = section.getElementsByClassName('add-single-button')[0];
-        this.removeAllButton = section.getElementsByClassName('remove-all-button')[0];
-        this.table = section.querySelector('.table tbody');
+		this.#addRandomButton = this.#section.getElementsByClassName('add-random-button')[0];
+        this.#addSingleDropdown = this.#section.getElementsByClassName('add-single-dropdown')[0];
+        this.#addSingleButton = this.#section.getElementsByClassName('add-single-button')[0];
+        this.#removeAllButton = this.#section.getElementsByClassName('remove-all-button')[0];
+        this.table = this.#section.querySelector('.table tbody');
 
         this.populateDropdown();
 
-		this.addRandomButton.addEventListener(
+		this.#addRandomButton.addEventListener(
 			'click',
 			() => {
 				const newTraits = this.newRandomMutableTraits(1);
@@ -27,14 +37,14 @@ export class ButtonPanel {
 			}
 		);
 
-        this.addSingleDropdown.addEventListener('change', () => this.updateButtons());
+        this.#addSingleDropdown.addEventListener('change', () => this.updateButtons());
 
-        this.addSingleButton.addEventListener(
+        this.#addSingleButton.addEventListener(
 			'click',
-			() => this.addTraits([parseInt(this.addSingleDropdown.value)])
+			() => this.addTraits([parseInt(this.#addSingleDropdown.value)])
 		);
 
-        this.removeAllButton.addEventListener(
+        this.#removeAllButton.addEventListener(
 			'click',
 			() => this.removeAll()
 		);
@@ -51,7 +61,7 @@ export class ButtonPanel {
             const newOption = document.createElement('option');
             newOption.value = id;
             newOption.textContent = `${id}: ${name}`;
-            this.addSingleDropdown.appendChild(newOption);
+            this.#addSingleDropdown.appendChild(newOption);
         });
     }
 
@@ -103,22 +113,22 @@ export class ButtonPanel {
 		const newMutableTraitAvailableToAdd = this.traitDetail
 			.filter(({id}) => !addedIds.includes(id))
 			.some(({id}) => this.isTraitMutable(id));
-		this.addRandomButton.disabled = !newMutableTraitAvailableToAdd;
+		this.#addRandomButton.disabled = !newMutableTraitAvailableToAdd;
 
 		// update add single dropdown
-		 Array.from(this.addSingleDropdown.options).forEach(
-			(option, index) => this.addSingleDropdown.options[index].disabled = (
+		 Array.from(this.#addSingleDropdown.options).forEach(
+			(option, index) => this.#addSingleDropdown.options[index].disabled = (
 				!this.isTraitMutable(parseInt(option.value)) || addedIds.includes(parseInt(option.value))
 			)
 		);
 
 		// update add single button
-		const selectedTraitId = this.addSingleDropdown.value;
+		const selectedTraitId = this.#addSingleDropdown.value;
 		const dropdownSelectionValid = selectedTraitId !== "" && this.isTraitMutable(parseInt(selectedTraitId)) && !addedIds.includes(parseInt(selectedTraitId));
-		this.addSingleButton.disabled = !dropdownSelectionValid;
+		this.#addSingleButton.disabled = !dropdownSelectionValid;
 
 		// update remove all button
-        this.removeAllButton.disabled = addedIds.every(traitId => !this.isTraitMutable(traitId));
+        this.#removeAllButton.disabled = addedIds.every(traitId => !this.isTraitMutable(traitId));
 	}
 
 	addCellsToRow (row, trait) {
@@ -151,6 +161,8 @@ export class ButtonPanel {
 }
 
 export class GenesButtonPanel extends ButtonPanel{
+	#setActionsFromGenes;
+
 	constructor ({
 		getActionsFromGenes,
 		setActionsFromGenes,
@@ -158,15 +170,14 @@ export class GenesButtonPanel extends ButtonPanel{
 	}) {
 		super(params);
 
-		this.getActionsFromGenes = getActionsFromGenes;
-		this.setActionsFromGenes = setActionsFromGenes;
+		this.#setActionsFromGenes = setActionsFromGenes;
 	}
 
 	addTraits (geneIds) {
 		geneIds.forEach(geneId => assertIsNumber(geneId));
 
 		this.dataStore.add(geneIds);
-		this.setActionsFromGenes();
+		this.#setActionsFromGenes();
 
 		this.dataStore.saveData();
 	}
@@ -175,7 +186,7 @@ export class GenesButtonPanel extends ButtonPanel{
 		geneIds.forEach(geneId => assertIsNumber(geneId));
 
 		this.dataStore.remove(geneIds)
-		this.setActionsFromGenes();
+		this.#setActionsFromGenes();
 
 		this.dataStore.saveData();
 	}
@@ -190,6 +201,9 @@ export class GenesButtonPanel extends ButtonPanel{
 }
 
 export class ActionsButtonPanel extends ButtonPanel{
+	#genes;
+	#getActionsFromGenes;
+
 	constructor ({
 		genes,
 		getActionsFromGenes,
@@ -197,14 +211,14 @@ export class ActionsButtonPanel extends ButtonPanel{
 	}) {
 		super(params);
 
-		this.genes = genes;
-		this.getActionsFromGenes = getActionsFromGenes;
+		this.#genes = genes;
+		this.#getActionsFromGenes = getActionsFromGenes;
 	}
 
 	isTraitMutable (actionId) {
 		assertIsNumber(actionId);
 
-		const actionIdsFromGenes = this.getActionsFromGenes();
+		const actionIdsFromGenes = this.#getActionsFromGenes();
 		return !actionIdsFromGenes.includes(actionId);
 	}
 
@@ -216,13 +230,13 @@ export class ActionsButtonPanel extends ButtonPanel{
 		row.insertCell(4).appendChild(document.createTextNode(
 			this.isTraitMutable(id)
 				? '-'
-				: this.genes.traitDetail.find(({actionCard}) => actionCard && (actionCard.id === id) ).name
+				: this.#genes.traitDetail.find(({actionCard}) => actionCard && (actionCard.id === id) ).name
 			));
 	}
 
 	renderTable () {
 		const actionIds = this.dataStore.get()
-			.concat(this.getActionsFromGenes())
+			.concat(this.#getActionsFromGenes())
 			.sort((a, b) => a - b);
 		const traits = actionIds.map(traitId => this.traitDetail.find(({id}) => id === traitId));
 
