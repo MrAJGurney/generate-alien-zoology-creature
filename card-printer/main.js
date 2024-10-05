@@ -60,7 +60,7 @@ const main = () => {
             actionIdsMutated: EVENT_TYPE_KEYS.ACTION_CARD_IDS_MUTATED
         }
     });
-    
+
     eventBus.triggerEvent({
         type: EVENT_TYPE_KEYS.ACTION_CARD_IDS_MUTATED
     });

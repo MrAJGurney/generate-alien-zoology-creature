@@ -15,7 +15,7 @@ const DATA_STORE_KEYS = {
     GENE_IDS: 'gIds',
     ACTIONS_IDS: 'aIds',
     LEVEL_NUMBER: 'lvl',
-    NAME_TEXT: 'name'    
+    NAME_TEXT: 'name'
 };
 
 const main = () => {

@@ -42,7 +42,7 @@ export class SharedDataCache {
         if (!this.#dataKeys.includes(key)) {
             throw new Error(`Invalid key: Key must me one of ${this.#dataKeys}: ${key}`)
         }
-        
+ 
         assertIsString(data);
 
         this.#stringifiedDataDict[key] = data;
