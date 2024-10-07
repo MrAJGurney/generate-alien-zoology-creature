@@ -1,3 +1,5 @@
+import { assertIsNumber } from "./asserts.js";
+
 const getRandomWholeNumber = (min, max) => {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -16,4 +18,21 @@ export const rollD50 = () => {
         ][rollD10() - 1];
     const onesDigit = rollD10();
     return tensDigit + onesDigit;
+}
+
+export const newUniqueD50Roll = previousRolls => {
+    if ((new Set(previousRolls)).size >= 50) {
+        throw new Error("All results have been rolled.");
+    }
+
+    previousRolls.forEach(roll => assertIsNumber(roll));
+
+    let newRoll;
+
+    // this is not a good implementation for generating a new trait, but it is functional and readable
+    do {
+        newRoll = rollD50();
+    } while (previousRolls.includes(newRoll))
+
+    return newRoll;
 }

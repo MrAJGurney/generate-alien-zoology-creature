@@ -4,16 +4,17 @@ import { assertIsNumber, assertIsString } from "./asserts.js";
 const LOCK_SYMBOL = Symbol("prevents non DataStore classes from called SharedDataCache functions");
 
 export class SharedDataCache {
-    #dataKeys;
-    #stringifiedDataDict;
+    dataKeys;
+
+    #encodedCacheDict;
 
     constructor ({
         dataKeys,
     }) {
-        this.#dataKeys = dataKeys;
-        this.#dataKeys.forEach(key => assertIsString(key));
+        this.dataKeys = dataKeys;
+        Object.values(this.dataKeys).forEach(key => assertIsString(key));
 
-        this.#stringifiedDataDict = {};
+        this.#encodedCacheDict = {};
     }
 
     get (lockSymbol, key) {
@@ -23,11 +24,11 @@ export class SharedDataCache {
 
         assertIsString(key);
 
-        if (!this.#dataKeys.includes(key)) {
-            throw new Error(`Invalid key: Key must me one of ${this.#dataKeys}: ${key}`)
+        if (!Object.values(this.dataKeys).includes(key)) {
+            throw new Error(`Invalid key: Key must me one of ${Object.values(this.dataKeys)}: ${key}`)
         }
 
-        const data = this.#stringifiedDataDict[key] ?? '';
+        const data = this.#encodedCacheDict[key] ?? '';
 
         return data;
     }
@@ -39,13 +40,13 @@ export class SharedDataCache {
 
         assertIsString(key);
 
-        if (!this.#dataKeys.includes(key)) {
-            throw new Error(`Invalid key: Key must me one of ${this.#dataKeys}: ${key}`)
+        if (!Object.values(this.dataKeys).includes(key)) {
+            throw new Error(`Invalid key: Key must me one of ${Object.values(this.dataKeys)}: ${key}`)
         }
- 
+
         assertIsString(data);
 
-        this.#stringifiedDataDict[key] = data;
+        this.#encodedCacheDict[key] = data;
     }
 
     populateDataCacheFromSearchParams (lockSymbol) {
@@ -53,7 +54,7 @@ export class SharedDataCache {
             throw new Error("Do not call SharedDataCache from non DataStore functions!");
         }
 
-        this.#stringifiedDataDict = readSearchParams();
+        this.#encodedCacheDict = readSearchParams();
     }
 
     persistDataCacheToSearchParams (lockSymbol) {
@@ -61,31 +62,29 @@ export class SharedDataCache {
             throw new Error("Do not call SharedDataCache from non DataStore functions!");
         }
 
-        writeSearchParams(this.#stringifiedDataDict);
+        writeSearchParams(this.#encodedCacheDict);
     }
 }
 
 class DataStore {
     sharedDataCache;
-    eventBus;
     dataKey;
-    eventTypeKey;
+
+    defaultValue
+    #onSave;
 
     constructor ({
         sharedDataCache,
-        eventBus,
         dataKey,
-        eventTypeKey 
+
+        defaultValue,
+        onSave
     }) {
         this.sharedDataCache = sharedDataCache;
-        this.eventBus = eventBus;
         this.dataKey = dataKey;
-        this.eventTypeKey = eventTypeKey;
 
-        this.eventBus.subscribe({
-            eventTypes: [this.eventBus.eventTypes.initialisePage],
-            subscriber: this.loadData.bind(this)
-        });
+        this.defaultValue = defaultValue;
+        this.#onSave = onSave;
     }
 
     loadData () {
@@ -94,10 +93,7 @@ class DataStore {
 
     saveData () {
         this.sharedDataCache.persistDataCacheToSearchParams(LOCK_SYMBOL);
-
-        this.eventBus.triggerEvent({
-            type: this.eventTypeKey
-        });
+        this.#onSave();
     }
 
     get () {
@@ -118,12 +114,12 @@ class DataStore {
 }
 
 export class IdsStore extends DataStore {
-    static #parseIds (stringifiedIds) {
-        if (!stringifiedIds) {
-            return [];
+    #decodeIds (encodedIds) {
+        if (!encodedIds) {
+            return this.defaultValue;
         }
 
-        const digits = stringifiedIds.split('');
+        const digits = encodedIds.split('');
         const tensDigits = digits.filter((_, index) => index % 2 === 0);
 
         return tensDigits
@@ -131,22 +127,23 @@ export class IdsStore extends DataStore {
             .map(stringId => parseInt(stringId));
     }
 
-    static #stringifyIds (parsedIds) {
-        if (!parsedIds) {
+    #encodeIds (decodedIds) {
+        if (!decodedIds) {
             return '';
         }
 
         const idLength = 2;
 
-        const stringIds = parsedIds.map(id => id.toString().padStart(idLength, '0'));
+        const stringIds = decodedIds.map(id => id.toString().padStart(idLength, '0'));
 
         return stringIds.join('');
     }
 
     get () {
-        const stringifiedData = this.sharedDataCache.get(LOCK_SYMBOL, this.dataKey);
-        const parsedData = IdsStore.#parseIds(stringifiedData);
-        return [...parsedData];
+        const encodedData = this.sharedDataCache.get(LOCK_SYMBOL, this.dataKey);
+        const decodedData = this.#decodeIds(encodedData);
+
+        return [...decodedData];
     }
 
     add (ids) {
@@ -156,8 +153,8 @@ export class IdsStore extends DataStore {
 
         const sortedCombinedIds = combinedIds.toSorted((a, b) => a - b);
 
-        const stringifiedData = IdsStore.#stringifyIds(sortedCombinedIds);
-        this.sharedDataCache.set(LOCK_SYMBOL, this.dataKey, stringifiedData);
+        const encodedIds = this.#encodeIds(sortedCombinedIds);
+        this.sharedDataCache.set(LOCK_SYMBOL, this.dataKey, encodedIds);
     }
 
     remove (ids) {
@@ -173,8 +170,8 @@ export class IdsStore extends DataStore {
             }
         });
 
-        const stringifiedData = IdsStore.#stringifyIds(currentIds);
-        this.sharedDataCache.set(LOCK_SYMBOL, this.dataKey, stringifiedData);
+        const encodedIds = this.#encodeIds(currentIds);
+        this.sharedDataCache.set(LOCK_SYMBOL, this.dataKey, encodedIds);
     }
 
     replace (ids) {
@@ -182,59 +179,54 @@ export class IdsStore extends DataStore {
 
         const sortedIds = ids.toSorted((a, b) => a - b);
 
-        const stringifiedData = IdsStore.#stringifyIds(sortedIds);
-        this.sharedDataCache.set(LOCK_SYMBOL, this.dataKey, stringifiedData);
+        const encodedIds = this.#encodeIds(sortedIds);
+        this.sharedDataCache.set(LOCK_SYMBOL, this.dataKey, encodedIds);
     }
 }
 
 export class NumberStore extends DataStore {
-    static #defaultLevel = 10;
-
-    static #parseNumber (stringifiedNumber) {
-        if (!stringifiedNumber) {
-            return NumberStore.#defaultLevel;
+    #decodeNumber (encodedNumber) {
+        if (!encodedNumber) {
+            return this.defaultValue;
         }
 
-        return parseInt(stringifiedNumber);
+        return parseInt(encodedNumber);
     }
 
-    static #stringifyNumber (parsedNumber) {
-        if (!parsedNumber) {
-            return '';
+    #encodeNumber (decodedNumber) {
+        if (decodedNumber !== 0 && !decodedNumber) {
+            return this.defaultValue;
         }
 
-        assertIsNumber(parsedNumber);
+        assertIsNumber(decodedNumber);
 
-        return parsedNumber.toString();
+        return decodedNumber.toString();
     }
 
     get () {
-        this.loadData();
-        const stringifiedData = this.sharedDataCache.get(LOCK_SYMBOL, this.dataKey);
-        const parsedData = NumberStore.#parseNumber(stringifiedData);
-        return parsedData;
+        const encodedNumber = this.sharedDataCache.get(LOCK_SYMBOL, this.dataKey);
+        const decodedNumber = this.#decodeNumber(encodedNumber);
+        return decodedNumber;
     }
 
-    replace (level) {
-        assertIsNumber(level);
+    replace (number) {
+        assertIsNumber(number);
 
-        const stringifiedData = NumberStore.#stringifyNumber(level);
-        this.sharedDataCache.set(LOCK_SYMBOL, this.dataKey, stringifiedData);
+        const encodeNumber = this.#encodeNumber(number);
+        this.sharedDataCache.set(LOCK_SYMBOL, this.dataKey, encodeNumber);
     }
 }
 
 export class TextStore extends DataStore {
-    static #defaultName = '';
-
-    static #decodeText (encodedText) {
+    #decodeText (encodedText) {
         if (!encodedText) {
-            return TextStore.#defaultName;
+            return this.defaultValue;
         }
 
         return decodeURIComponent(encodedText);
     }
 
-    static #encodeText (decodedText) {
+    #encodeText (decodedText) {
         if (!decodedText) {
             encodeURIComponent('');
         }
@@ -245,16 +237,15 @@ export class TextStore extends DataStore {
     }
 
     get () {
-        this.loadData();
         const encodedText = this.sharedDataCache.get(LOCK_SYMBOL, this.dataKey);
-        const decodedText = TextStore.#decodeText(encodedText);
+        const decodedText = this.#decodeText(encodedText);
         return decodedText;
     }
 
-    replace (decodedText) {
-        assertIsString(decodedText);
+    replace (text) {
+        assertIsString(text);
 
-        const encodedText = TextStore.#encodeText(decodedText);
+        const encodedText = this.#encodeText(text);
         this.sharedDataCache.set(LOCK_SYMBOL, this.dataKey, encodedText);
     }
 }

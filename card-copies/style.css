@@ -89,6 +89,12 @@
 
 }
 
+@media screen {
+    .card-container {
+        display: none;
+    }
+}
+
 @media print {
     @page {
         margin: 10mm;

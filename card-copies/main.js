@@ -26,10 +26,10 @@ const main = () => {
     });
 
     const actionIdsStore = new IdsStore({
-        eventBus,
         sharedDataCache,
+        defaultValue: [],
         dataKey: DATA_STORE_KEYS.ACTION_CARD_IDS,
-        eventTypeKey: EVENT_TYPE_KEYS.ACTION_CARD_IDS_MUTATED
+        onSave: () => eventBus.triggerEvent({type: EVENT_TYPE_KEYS.ACTION_CARD_IDS_MUTATED})
     });
 
     new AddRemoveCards({

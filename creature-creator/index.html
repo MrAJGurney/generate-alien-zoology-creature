@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Alien Zoology Create & Edit Creature</title>
+        <link rel="shortcut icon" type="image/x-icon" href="../favicon.ico">
+        <script type="module" src="main.js"></script>
+    </head>
+    <body>
+        <a href="../">Home</a>
+        <h1>Alien Zoology Create & Edit Creature</h1>
+
+        <h2>Generate & Reset Creature Traits</h2>
+
+        <label for="name-text-input">enter creature name:</label>
+        <input type="text" id="name-text-input" class="name-text-input" placeholder="type something..." />
+        <br/>
+        <label for="select-level-dropdown">select level:</label>
+        <select id="select-level-dropdown" class="select-level-dropdown"></select>
+        <br/>
+        <button id="generate-new-random-creature-button">generate new random creature</button>
+        <br/>
+        <button id="remove-all-genes-and-actions-button">remove all genes and actions</button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Creature</th>
+                    <th>MOV</th>
+                    <th>A</th>
+                    <th>SHO</th>
+                    <th>HP</th>
+                    <th>DEF</th>
+                    <th>NERVE</th>
+                    <th>ESC</th>
+                </tr>
+            </thead>
+            <tbody id="view-profile-table-body"></tbody>
+        </table>
+
+        <h2>Manage Creature Genes</h2>
+
+        <button id="add-random-gene-button" disabled>add random gene</button>
+        <br/>
+        <label for="select-single-gene-dropdown">select gene:</label>
+        <select id="select-single-gene-dropdown" class="select-single-gene-dropdown">
+            <option value="" disabled selected>select gene</option>
+        </select>
+        <button id="add-single-gene-button" disabled>add gene</button>
+        <br/>
+        <button id="remove-all-genes-button" disabled>remove all genes</button>
+
+        <table id="view-and-edit-genes-table">
+            <thead>
+                <tr>
+                    <th>D50</th>
+                    <th>Gene Title</th>
+                    <th>Description</th>
+                    <th>Effect</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <h2>Manage Creature Action Cards</h2>
+
+        <button id="add-random-action-button" disabled>add random action</button>
+        <br/>
+        <label for="select-single-action-dropdown">select action:</label>
+        <select id="select-single-action-dropdown" class="select-single-action-dropdown">
+            <option value="" disabled selected>select action</option>
+        </select>
+        <button id="add-single-action-button" disabled>add action</button>
+        <br/>
+        <button id="remove-all-actions-button" disabled>remove all actions</button>
+
+        <table id="view-and-edit-actions-table">
+            <thead>
+                <tr>
+                    <th>D50</th>
+                    <th>Action Card Title</th>
+                    <th>Effect</th>
+                    <th>Actions</th>
+                    <th>Added By</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </body>
+</html>
