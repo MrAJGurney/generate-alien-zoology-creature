@@ -1,8 +1,6 @@
 export class ButtonsPanel {
-    #eventBus;
     #cardStore;
     #cardData;
-    #eventTypeKey;
     #section;
     #addSingleDropdown;
     #addSingleButton;
@@ -13,19 +11,19 @@ export class ButtonsPanel {
         eventBus,
         cardStore,
         cardData,
-        eventTypeKey,
         section
     }) {
-        this.#eventBus = eventBus;
         this.#cardStore = cardStore;
         this.#cardData = cardData;
-        this.#eventTypeKey = eventTypeKey;
         this.#section = section;
 
-        this.#eventBus.subscribe({
-            eventTypes: [this.#eventTypeKey],
-            subscriber: this.updateButtons.bind(this)
-        })
+        eventBus.subscribe({
+			eventTypes: [
+				eventBus.eventTypes.initialiseDisplay,
+				eventBus.eventTypes.actionCardIdsMutated
+			],
+			subscriber: this.updateButtons.bind(this)
+		});
 
         this.#addSingleDropdown = this.#section.getElementsByClassName('add-single-dropdown')[0],
         this.#addSingleButton = this.#section.getElementsByClassName('add-single-button')[0],

@@ -48,7 +48,7 @@ body {
             vertical-align: middle;
             border: 0.1mm solid black;
         }
-    
+
         th {
             background-color: whitesmoke;
             font-weight: bold;
@@ -58,7 +58,7 @@ body {
             text-align: center;
         }
 
-        td { 
+        td {
             padding: 1.25mm;
             --small-font-size: 4mm;
         }

@@ -1,33 +1,31 @@
 export class CardPrintSheet {
-    #eventBus;
     #dataStores;
     #cardData;
-    #eventTypeKeys;
     #cardContainer;
 
     constructor ({
         eventBus,
         dataStores,
-        cardData,
-        eventTypeKeys
+        cardData
     }) {
-        this.#eventBus = eventBus;
         this.#dataStores = dataStores;
         this.#cardData = cardData;
-        this.#eventTypeKeys = eventTypeKeys;
 
         this.#cardContainer = document.getElementsByClassName('card-container')[0];
 
-        this.#eventBus.subscribe({
-            eventTypes: [this.#eventTypeKeys.actionIdsMutated],
-            subscriber: this.renderCards.bind(this)
-        });
+        eventBus.subscribe({
+			eventTypes: [
+				eventBus.eventTypes.initialiseDisplay,
+				eventBus.eventTypes.actionCardIdsMutated
+			],
+			subscriber: this.renderCards.bind(this)
+		});
     }
 
     buildActionCards () {
-        const actionIds = this.#dataStores.actionIds.get();
+        const actionCardIdsStore = this.#dataStores.actionCardIdsStore.get();
 
-        const actionCardDetails = actionIds.map(actionId => {
+        const actionCardDetails = actionCardIdsStore.map(actionId => {
             const {id, name, prerequisite, effect, special} = this.#cardData.actionCards.find(({id}) => actionId === id);
 
             return {

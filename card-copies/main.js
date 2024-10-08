@@ -1,73 +1,76 @@
 import { CREATURE_ACTION_CARDS } from "../source-files/creature-action-cards.js";
 import { EventBus } from "../utilities/event-bus.js";
 import { SharedDataCache, IdsStore } from "../utilities/data-store.js";
-import { AddRemoveCards as AddRemoveCards } from "./card-table.js";
+import { AddRemoveCards } from "./card-table.js";
 import { CardPrintSheet } from "./card-print-sheet.js";
-
-const EVENT_TYPE_KEYS = {
-    INITIALISE_PAGE: 'initialisePage',
-    ACTION_CARD_IDS_MUTATED: 'traitIdsMutated',
-};
-
-const DATA_STORE_KEYS = {
-    ACTION_CARD_IDS: 'aIds'
-}
 
 const main = () => {
     const eventBus = new EventBus({
         eventTypes: {
-            actionIdsMutated: EVENT_TYPE_KEYS.ACTION_CARD_IDS_MUTATED,
-            initialisePage: EVENT_TYPE_KEYS.INITIALISE_PAGE
+            initialiseData: 'initialiseData',
+            initialiseDisplay: 'initialiseDisplay',
+            actionCardIdsMutated: 'actionCardIdsMutated',
         }
     });
 
     const sharedDataCache = new SharedDataCache({
-        dataKeys: [DATA_STORE_KEYS.ACTION_CARD_IDS]
+        dataKeys: {
+            actionCardIds: 'aIds'
+        }
     });
 
-    const actionIdsStore = new IdsStore({
+    const actionCardIdsStore = new IdsStore({
         sharedDataCache,
         defaultValue: [],
-        dataKey: DATA_STORE_KEYS.ACTION_CARD_IDS,
-        onSave: () => eventBus.triggerEvent({type: EVENT_TYPE_KEYS.ACTION_CARD_IDS_MUTATED})
+        dataKey: sharedDataCache.dataKeys.actionCardIds,
+        onSave: () => eventBus.triggerEvent({type: eventBus.eventTypes.actionCardIdsMutated})
     });
 
     new AddRemoveCards({
         eventBus,
         dataStores: {
-            actionIdsStore
+            actionCardIdsStore
         },
         cardData: {
             actionCards: CREATURE_ACTION_CARDS
         },
         cardDeckLabels: {
             actionDeckLabel: '7.2 Creatures: Action Cards table'
-        },
-        eventTypeKeys: {
-            actionIdsMutated: EVENT_TYPE_KEYS.ACTION_CARD_IDS_MUTATED
         }
     });
 
     new CardPrintSheet({
         eventBus,
         dataStores: {
-            actionIds: actionIdsStore
+            actionCardIdsStore
         },
         cardData: {
             actionCards: CREATURE_ACTION_CARDS
-        },
-        eventTypeKeys: {
-            actionIdsMutated: EVENT_TYPE_KEYS.ACTION_CARD_IDS_MUTATED
+        }
+    });
+
+    eventBus.subscribe({
+        eventTypes: [eventBus.eventTypes.initialiseData],
+        subscriber: () => {
+            actionCardIdsStore.loadData();
         }
     });
 
     eventBus.triggerEvent({
-        type: EVENT_TYPE_KEYS.ACTION_CARD_IDS_MUTATED
+        type: eventBus.eventTypes.initialiseData
+    });
+
+    eventBus.triggerEvent({
+        type: eventBus.eventTypes.initialiseDisplay
     });
 
     window.addEventListener('popstate', () => {
         eventBus.triggerEvent({
-            type: EVENT_TYPE_KEYS.ACTION_CARD_IDS_MUTATED
+            type: eventBus.eventTypes.initialiseData
+        });
+
+        eventBus.triggerEvent({
+            type: eventBus.eventTypes.initialiseDisplay
         });
     });
 }

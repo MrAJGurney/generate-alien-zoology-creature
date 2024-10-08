@@ -5,8 +5,6 @@ export class AddRemoveCards {
     #dataStores;
     #cardData;
     #cardDeckLabels;
-    #eventTypeKeys;
-    #creatureActionCardsButtonsPanel;
     #cardsToPrintTableBody;
     #printCardsButton;
 
@@ -15,19 +13,16 @@ export class AddRemoveCards {
         dataStores,
         cardData,
         cardDeckLabels,
-        eventTypeKeys
     }) {
         this.#eventBus = eventBus;
         this.#dataStores = dataStores;
         this.#cardData = cardData;
         this.#cardDeckLabels = cardDeckLabels;
-        this.#eventTypeKeys = eventTypeKeys;
 
-        this.#creatureActionCardsButtonsPanel = new ButtonsPanel({
+        new ButtonsPanel({
             eventBus: this.#eventBus,
-            cardStore: this.#dataStores.actionIdsStore,
+            cardStore: this.#dataStores.actionCardIdsStore,
             cardData: this.#cardData.actionCards,
-            eventTypeKey: eventTypeKeys.actionIdsMutated,
             section: document.getElementById('creature-action-cards-section')
         });
 
@@ -39,25 +34,26 @@ export class AddRemoveCards {
             () => {window.print()}
         );
 
-        this.#eventBus.subscribe({
-            eventTypes: [this.#eventTypeKeys.actionIdsMutated],
-            subscriber: this.updateButtons.bind(this)
-        })
-
-        this.#eventBus.subscribe({
-            eventTypes: [this.#eventTypeKeys.actionIdsMutated],
-            subscriber: this.renderTable.bind(this)
-        })
+        eventBus.subscribe({
+			eventTypes: [
+				eventBus.eventTypes.initialiseDisplay,
+				eventBus.eventTypes.actionCardIdsMutated
+			],
+			subscriber: () => {
+				this.updateButtons();
+				this.renderTable();
+			}
+		});
     }
 
     updateButtons () {
-        const creatureActionCardIds = this.#dataStores.actionIdsStore.get();
+        const creatureActionCardIds = this.#dataStores.actionCardIdsStore.get();
 
         this.#printCardsButton.disabled = creatureActionCardIds.length === 0;
     }
 
     renderTable () {
-        const creatureActionCardIds = this.#dataStores.actionIdsStore.get();
+        const creatureActionCardIds = this.#dataStores.actionCardIdsStore.get();
         const creatureActionCards = creatureActionCardIds.map(actionCardId => this.#cardData.actionCards.find(({id}) => actionCardId === id));
 
         this.#cardsToPrintTableBody.innerHTML = '';
@@ -70,8 +66,8 @@ export class AddRemoveCards {
             const deleteRowButton = document.createElement('button');
             deleteRowButton.textContent = 'remove';
             deleteRowButton.onclick = () => {
-                this.#dataStores.actionIdsStore.remove([id])
-                this.#dataStores.actionIdsStore.saveData();
+                this.#dataStores.actionCardIdsStore.remove([id])
+                this.#dataStores.actionCardIdsStore.saveData();
             };
             row.insertCell(3).appendChild(deleteRowButton);
         });
