@@ -1,3 +1,31 @@
+export class NameAndLevelUi {
+    #dataStores;
+
+    #nameTextDiv;
+    #levelTextDiv;
+
+    constructor ({
+        dataStores,
+        elementIds: {
+            nameTextDivId,
+            levelTextDivId
+        },
+    }) {
+        this.#dataStores = dataStores;
+
+        this.#nameTextDiv = document.getElementById(nameTextDivId);
+        this.#levelTextDiv = document.getElementById(levelTextDivId);
+    }
+
+    renderTable () {
+        const name = this.#dataStores.creatureNameStore.get();
+        const level = this.#dataStores.creatureLevelStore.get();
+
+        this.#nameTextDiv.textContent = name;
+        this.#levelTextDiv.textContent = level.toString();
+    }
+}
+
 export class ViewProfileUi {
     #dataStores;
     #profileDetails
@@ -32,8 +60,6 @@ export class ViewProfileUi {
 
         const firstRow = this.#profileTableBody.insertRow();
     	const firstRowDescriptionCell = firstRow.insertCell(0)
-    	firstRowDescriptionCell.appendChild(document.createTextNode("Creature"))
-    	firstRowDescriptionCell.appendChild(document.createElement("br"))
     	firstRowDescriptionCell.appendChild(document.createTextNode("(base stats before modifiers)"));
     	firstRow.insertCell(1).appendChild(document.createTextNode(`${this.#profileDetails.MOV}`));
     	firstRow.insertCell(2).appendChild(document.createTextNode(`${this.#profileDetails.A}+`));
@@ -56,8 +82,6 @@ export class ViewProfileUi {
 
         const secondRow = this.#profileTableBody.insertRow();
     	const secondRowDescriptionCell = secondRow.insertCell(0)
-    	secondRowDescriptionCell.appendChild(document.createTextNode("Creature"))
-    	secondRowDescriptionCell.appendChild(document.createElement("br"))
     	secondRowDescriptionCell.appendChild(document.createTextNode("(after modifiers)"));
     	secondRow.insertCell(1).appendChild(document.createTextNode(`${adjustedProfile.MOV}`));
     	secondRow.insertCell(2).appendChild(document.createTextNode(`${adjustedProfile.A}+`));

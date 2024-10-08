@@ -1,6 +1,6 @@
 import { ResetCreatureUi } from "./reset-creature-ui.js"
 import { EditNameUi, SelectLevelUi } from "./edit-profile-ui.js"
-import { ViewProfileUi } from "./view-profile-ui.js"
+import { NameAndLevelUi, ViewProfileUi } from "./view-profile-ui.js"
 import { EditGenesUi, EditActionsUi } from "./edit-traits-ui.js"
 import { ViewGenesUi, ViewActionsUi } from "./view-traits-ui.js"
 
@@ -87,7 +87,7 @@ export class ViewAndEditCreatureUi {
 			dataStore: dataStores.geneIdsStore,
 			traitDetail: details.geneDetails,
 			elementIds: {
-				traitsTableId: 'view-and-edit-genes-table'
+				traitsTableId: 'view-and-edit-genes-table-body'
 			},
 			renderOnlyPrintableColumns: false,
 			viewGenesUiParams: {
@@ -116,7 +116,7 @@ export class ViewAndEditCreatureUi {
 			dataStore: dataStores.actionIdsStore,
 			traitDetail: details.actionDetails,
 			elementIds: {
-				traitsTableId: 'view-and-edit-actions-table'
+				traitsTableId: 'view-and-edit-actions-table-body'
 			},
 			renderOnlyPrintableColumns: false,
 			viewActionsUiParams: {
@@ -124,6 +124,53 @@ export class ViewAndEditCreatureUi {
 				geneIdsStore: dataStores.geneIdsStore
 			},
 		});
+
+		// printableViewProfileUi
+		const printableNameAndLevelUi = new NameAndLevelUi({
+			dataStores,
+			elementIds: {
+				nameTextDivId: 'print-display-creature-name',
+				levelTextDivId: 'print-display-creature-level'
+			},
+		});
+
+		const printableViewProfileUi = new ViewProfileUi({
+			dataStores,
+			profileDetails: details.profileDetails,
+			elementIds: {
+				profileTableBodyId: 'print-profile-table-body'
+			},
+			profileChangeFromGeneLookup
+		});
+
+		const printableViewGenesUi = new ViewGenesUi({
+			dataStore: dataStores.geneIdsStore,
+			traitDetail: details.geneDetails,
+			elementIds: {
+				traitsTableId: 'print-genes-table-body'
+			},
+			renderOnlyPrintableColumns: true,
+			viewGenesUiParams: {
+				actionAddedByGeneLookupDict: actionAddedByGeneLookup,
+				actionIdsStore: dataStores.actionIdsStore
+			},
+		});
+
+		const printableViewActionsUi = new ViewActionsUi({
+			dataStore: dataStores.actionIdsStore,
+			traitDetail: details.actionDetails,
+			elementIds: {
+				traitsTableId: 'print-actions-table-body'
+			},
+			renderOnlyPrintableColumns: true,
+			viewActionsUiParams: {
+				actionAddedByGeneLookupDict: actionAddedByGeneLookup,
+				geneIdsStore: dataStores.geneIdsStore
+			},
+		});
+
+		const printCreatureButton = document.getElementById('print-creature-button');
+		printCreatureButton.addEventListener('click', () => window.print());
 
 		eventBus.subscribe({
 			eventTypes: [
@@ -133,16 +180,27 @@ export class ViewAndEditCreatureUi {
 				eventBus.eventTypes.creatureNameMutated
 			],
 			subscriber: () => {
+				// reset creature
 				resetCreatureUi.updateButtons();
+
+				// edit and view profile
 				editNameUi.updateButtons();
 				selectLevelUi.updateButtons();
 				viewProfileUi.renderTable();
 
+				// edit and view genes
 				editGenesUi.updateButtons();
 				viewGenesUi.renderTable();
 
+				// edit and view actions
 				editActionsUi.updateButtons();
 				viewActionsUi.renderTable();
+
+				// print sections
+				printableNameAndLevelUi.renderTable();
+				printableViewProfileUi.renderTable();
+				printableViewGenesUi.renderTable();
+				printableViewActionsUi.renderTable();
 			}
 		});
     }

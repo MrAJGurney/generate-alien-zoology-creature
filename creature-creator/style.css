@@ -1,0 +1,94 @@
+
+body {
+    font-family: Garamond, serif;
+    --large-font-size: 7mm;
+    --medium-font-size: 4mm;
+    --small-font-size: 4mm;
+}
+
+.print-display {
+    display: flex;
+    flex-direction: column;
+
+    height: 100vh;
+    page-break-after: always;
+    font-size: var(--small-font-size);
+
+    h1 {
+        display: flex;
+        flex-direction: row;
+
+        margin-left: auto;
+        margin-right: auto;
+        font-size: var(--large-font-size);
+        font-weight: bold;
+
+        #print-display-creature-level {
+            margin-left: 1.5mm;
+        }
+    }
+
+    table:has(#print-profile-table-body) {
+        text-align: center;
+        font-size: var(--medium-font-size);
+        width: 60%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    table {
+        flex-grow: 0;
+
+        border-collapse: collapse;
+        page-break-inside: avoid;
+        margin: var(--small-font-size);
+        font-size: var(--medium-font-size);
+
+        th, td {
+            vertical-align: middle;
+            border: 0.1mm solid black;
+        }
+    
+        th {
+            background-color: whitesmoke;
+            font-weight: bold;
+        }
+
+        th:nth-child(1), td:nth-child(1) {
+            text-align: center;
+        }
+
+        td { 
+            padding: 1.25mm;
+            --small-font-size: 4mm;
+        }
+    }
+
+    div.spacer {
+        flex-grow: 1;
+
+        max-height: var(--medium-font-size);
+    }
+}
+
+@media print {
+    body {
+        /* from reset.css */
+        margin: 0;
+		padding: 0;
+		border: 0;
+		font-size: 100%;
+		font: inherit;
+		vertical-align: baseline;
+    }
+
+    .screen-display {
+        display: none;
+    }
+}
+
+@media screen {
+    .print-display {
+        display: none;
+    }
+}
