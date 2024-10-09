@@ -141,9 +141,9 @@ export class IdsStore extends DataStore {
 
         const combinedIds = this.get().concat(ids);
 
-        const sortedCombinedIds = combinedIds.toSorted((a, b) => a - b);
+        combinedIds.sort((a, b) => a - b);
 
-        const encodedIds = this.encodeIds(sortedCombinedIds);
+        const encodedIds = this.encodeIds(combinedIds);
         this.sharedDataCache.set(LOCK_SYMBOL, this.dataKey, encodedIds);
     }
 
@@ -167,9 +167,10 @@ export class IdsStore extends DataStore {
     replace (ids) {
         ids.forEach(id => assertIsNumber(id));
 
-        const sortedIds = ids.toSorted((a, b) => a - b);
+        const copyOfIds = JSON.parse(JSON.stringify(ids));
+        copyOfIds.sort((a, b) => a - b);
 
-        const encodedIds = this.encodeIds(sortedIds);
+        const encodedIds = this.encodeIds(copyOfIds);
         this.sharedDataCache.set(LOCK_SYMBOL, this.dataKey, encodedIds);
     }
 }
