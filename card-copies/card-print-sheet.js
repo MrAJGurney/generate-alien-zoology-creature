@@ -1,17 +1,13 @@
 export class CardPrintSheet {
-    #dataStores;
-    #cardData;
-    #cardContainer;
-
     constructor ({
         eventBus,
         dataStores,
         cardData
     }) {
-        this.#dataStores = dataStores;
-        this.#cardData = cardData;
+        this.dataStores = dataStores;
+        this.cardData = cardData;
 
-        this.#cardContainer = document.getElementsByClassName('card-container')[0];
+        this.cardContainer = document.getElementsByClassName('card-container')[0];
 
         eventBus.subscribe({
 			eventTypes: [
@@ -23,10 +19,10 @@ export class CardPrintSheet {
     }
 
     buildActionCards () {
-        const actionCardIdsStore = this.#dataStores.actionCardIdsStore.get();
+        const actionCardIdsStore = this.dataStores.actionCardIdsStore.get();
 
         const actionCardDetails = actionCardIdsStore.map(actionId => {
-            const {id, name, prerequisite, effect, special} = this.#cardData.actionCards.find(({id}) => actionId === id);
+            const {id, name, prerequisite, effect, special} = this.cardData.actionCards.find(({id}) => actionId === id);
 
             return {
                 header: `Alien Creature Action Card (${id.toString().padStart(2, '0')})`,
@@ -44,7 +40,7 @@ export class CardPrintSheet {
     }
 
     renderCards () {
-        this.#cardContainer.innerHTML = '';
+        this.cardContainer.innerHTML = '';
 
         this.buildActionCards().forEach(({header, title, subtitle, body, special}) => {
             const card = document.createElement('div');
@@ -111,7 +107,7 @@ export class CardPrintSheet {
                 }
             }
 
-            this.#cardContainer.appendChild(card);
+            this.cardContainer.appendChild(card);
         })
     }
 }

@@ -2,15 +2,6 @@ import { newUniqueD50Roll } from "../utilities/roll-dice.js";
 import { assertIsNumber } from "../utilities/asserts.js";
 
 class EditTraitsUi {
-	dataStore;
-
-	#traitDetail;
-
-	#addRandomTraitButton;
-	#selectSingleTraitDropdown;
-	#addSingleTraitButton;
-	#removeAllTraitsButton;
-
 	constructor({
 		dataStore,
 		traitDetail,
@@ -23,49 +14,49 @@ class EditTraitsUi {
 	}) {
 		this.dataStore = dataStore;
 
-		this.#traitDetail = traitDetail;
+		this.traitDetail = traitDetail;
 
-		this.#addRandomTraitButton = document.getElementById(addRandomTraitButtonId);
-		this.#selectSingleTraitDropdown = document.getElementById(selectSingleTraitDropdownId);
-		this.#addSingleTraitButton = document.getElementById(addSingleTraitButtonId);
-		this.#removeAllTraitsButton = document.getElementById(removeAllTraitsButtonId);
+		this.addRandomTraitButton = document.getElementById(addRandomTraitButtonId);
+		this.selectSingleTraitDropdown = document.getElementById(selectSingleTraitDropdownId);
+		this.addSingleTraitButton = document.getElementById(addSingleTraitButtonId);
+		this.removeAllTraitsButton = document.getElementById(removeAllTraitsButtonId);
 
 		// populate select single trait dropdown options
-		this.#traitDetail.forEach(({ id, name }) => {
+		this.traitDetail.forEach(({ id, name }) => {
             const option = document.createElement('option');
             option.value = id;
             option.textContent = `${id}: ${name}`;
-            this.#selectSingleTraitDropdown.appendChild(option);
+            this.selectSingleTraitDropdown.appendChild(option);
         });
 
-		this.#addRandomTraitButton.addEventListener('click', this.#onAddRandomTraitButtonClick.bind(this));
-        this.#selectSingleTraitDropdown.addEventListener('change', this.#onSelectSingleTraitDropdownChange.bind(this));
-		this.#addSingleTraitButton.addEventListener('click', this.#onAddSingleTraitButtonClick.bind(this));
-		this.#removeAllTraitsButton.addEventListener('click', this.#onRemoveAllTraitsButtonClick.bind(this));
+		this.addRandomTraitButton.addEventListener('click', this.onAddRandomTraitButtonClick.bind(this));
+        this.selectSingleTraitDropdown.addEventListener('change', this.onSelectSingleTraitDropdownChange.bind(this));
+		this.addSingleTraitButton.addEventListener('click', this.onAddSingleTraitButtonClick.bind(this));
+		this.removeAllTraitsButton.addEventListener('click', this.onRemoveAllTraitsButtonClick.bind(this));
 	}
 
 	updateButtons () {
 		const addedIds = this.dataStore.get();
 
 		// add random trait button
-		const newMutableTraitAvailableToAdd = this.#traitDetail
+		const newMutableTraitAvailableToAdd = this.traitDetail
 			.filter(({id}) => !addedIds.includes(id))
 			.some(({id}) => !this.getImmutableTraitIds().includes(id));
-		this.#addRandomTraitButton.disabled = !newMutableTraitAvailableToAdd;
+		this.addRandomTraitButton.disabled = !newMutableTraitAvailableToAdd;
 
 		// select single trait dropdown
-		 Array.from(this.#selectSingleTraitDropdown.options).forEach(
-			(option, index) => this.#selectSingleTraitDropdown.options[index].disabled =
+		 Array.from(this.selectSingleTraitDropdown.options).forEach(
+			(option, index) => this.selectSingleTraitDropdown.options[index].disabled =
 				this.getImmutableTraitIds().includes(parseInt(option.value)) || addedIds.includes(parseInt(option.value))
 		);
 
 		// add single trait button
-		const selectedTraitId = this.#selectSingleTraitDropdown.value;
+		const selectedTraitId = this.selectSingleTraitDropdown.value;
 		const dropdownSelectionValid = selectedTraitId !== "" && !this.getImmutableTraitIds().includes(parseInt(selectedTraitId)) && !addedIds.includes(parseInt(selectedTraitId));
-		this.#addSingleTraitButton.disabled = !dropdownSelectionValid;
+		this.addSingleTraitButton.disabled = !dropdownSelectionValid;
 
 		// remove all traits button
-        this.#removeAllTraitsButton.disabled = addedIds.every(traitId => this.getImmutableTraitIds().includes(traitId));
+        this.removeAllTraitsButton.disabled = addedIds.every(traitId => this.getImmutableTraitIds().includes(traitId));
 	}
 
 	getImmutableTraitIds () {
@@ -80,7 +71,7 @@ class EditTraitsUi {
 		// do nothing
 	}
 
-	#onAddRandomTraitButtonClick () {
+	onAddRandomTraitButtonClick () {
 		const currentIds = this.dataStore.get();
 		const traitId = newUniqueD50Roll(currentIds);
 		this.dataStore.add([traitId])
@@ -88,19 +79,19 @@ class EditTraitsUi {
 		this.dataStore.saveData();
 	}
 
-	#onSelectSingleTraitDropdownChange () {
+	onSelectSingleTraitDropdownChange () {
 		this.updateButtons();
 	}
 
-	#onAddSingleTraitButtonClick () {
-		const traitId = parseInt(this.#selectSingleTraitDropdown.value);
+	onAddSingleTraitButtonClick () {
+		const traitId = parseInt(this.selectSingleTraitDropdown.value);
 		assertIsNumber(traitId);
 		this.dataStore.add([traitId])
 		this.onTraitsAdded([traitId]);
 		this.dataStore.saveData();
 	}
 
-	#onRemoveAllTraitsButtonClick () {
+	onRemoveAllTraitsButtonClick () {
 		const currentIds = this.dataStore.get();
 		const idsToRemove = currentIds.filter(id => !this.getImmutableTraitIds().includes(id))
 		this.dataStore.remove(idsToRemove);
@@ -110,9 +101,6 @@ class EditTraitsUi {
 }
 
 export class EditGenesUi extends EditTraitsUi {
-	#actionIdsStore;
-	#actionAddedByGeneLookupDict;
-
 	constructor ({
 		editGenesUiParams: {
 			actionAddedByGeneLookupDict,
@@ -122,41 +110,38 @@ export class EditGenesUi extends EditTraitsUi {
 	}) {
 		super(params);
 
-		this.#actionIdsStore = actionIdsStore;
-		this.#actionAddedByGeneLookupDict = actionAddedByGeneLookupDict;
+		this.actionIdsStore = actionIdsStore;
+		this.actionAddedByGeneLookupDict = actionAddedByGeneLookupDict;
 	}
 
 	onTraitsAdded (geneIds) {
-		const currentActionIds = this.#actionIdsStore.get();
+		const currentActionIds = this.actionIdsStore.get();
 		const actionIdsToAdd = geneIds
-			.map(geneId => this.#actionAddedByGeneLookupDict[geneId])
+			.map(geneId => this.actionAddedByGeneLookupDict[geneId])
 			.filter(lookup => lookup !== undefined)
 			.map(lookup => lookup.actionId)
 			.filter(actionId => !currentActionIds.includes(actionId));
 
 		if (actionIdsToAdd.length > 0) {
-			this.#actionIdsStore.add(actionIdsToAdd);
+			this.actionIdsStore.add(actionIdsToAdd);
 		}
 	}
 
 	onTraitsRemoved (geneIds) {
-		const currentActionIds = this.#actionIdsStore.get();
+		const currentActionIds = this.actionIdsStore.get();
 		const actionsToRemove = geneIds
-			.map(geneId => this.#actionAddedByGeneLookupDict[geneId])
+			.map(geneId => this.actionAddedByGeneLookupDict[geneId])
 			.filter(lookup => lookup !== undefined)
 			.map(lookup => lookup.actionId)
 			.filter(actionId => currentActionIds.includes(actionId));
 
 		if (actionsToRemove.length > 0) {
-			this.#actionIdsStore.remove(actionsToRemove);
+			this.actionIdsStore.remove(actionsToRemove);
 		}
 	}
 }
 
 export class EditActionsUi extends EditTraitsUi {
-	#geneIdsStore;
-	#actionAddedByGeneLookupDict;
-
 	constructor ({
 		editActionsUiParams: {
 			actionAddedByGeneLookupDict,
@@ -166,14 +151,14 @@ export class EditActionsUi extends EditTraitsUi {
 	}) {
 		super(params);
 
-		this.#geneIdsStore = geneIdsStore;
-		this.#actionAddedByGeneLookupDict = actionAddedByGeneLookupDict;
+		this.geneIdsStore = geneIdsStore;
+		this.actionAddedByGeneLookupDict = actionAddedByGeneLookupDict;
 	}
 
 	getImmutableTraitIds () {
-		const currentGeneIds = this.#geneIdsStore.get();
+		const currentGeneIds = this.geneIdsStore.get();
 		const immutableActionIds = currentGeneIds
-			.map(geneId => this.#actionAddedByGeneLookupDict[geneId])
+			.map(geneId => this.actionAddedByGeneLookupDict[geneId])
 			.filter(lookup => lookup !== undefined)
 			.map(lookup => lookup.actionId);
 

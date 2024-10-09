@@ -1,9 +1,4 @@
 export class NameAndLevelUi {
-    #dataStores;
-
-    #nameTextDiv;
-    #levelTextDiv;
-
     constructor ({
         dataStores,
         elementIds: {
@@ -11,28 +6,22 @@ export class NameAndLevelUi {
             levelTextDivId
         },
     }) {
-        this.#dataStores = dataStores;
+        this.dataStores = dataStores;
 
-        this.#nameTextDiv = document.getElementById(nameTextDivId);
-        this.#levelTextDiv = document.getElementById(levelTextDivId);
+        this.nameTextDiv = document.getElementById(nameTextDivId);
+        this.levelTextDiv = document.getElementById(levelTextDivId);
     }
 
     renderTable () {
-        const name = this.#dataStores.creatureNameStore.get();
-        const level = this.#dataStores.creatureLevelStore.get();
+        const name = this.dataStores.creatureNameStore.get();
+        const level = this.dataStores.creatureLevelStore.get();
 
-        this.#nameTextDiv.textContent = name;
-        this.#levelTextDiv.textContent = level.toString();
+        this.nameTextDiv.textContent = name;
+        this.levelTextDiv.textContent = level.toString();
     }
 }
 
 export class ViewProfileUi {
-    #dataStores;
-    #profileDetails
-    #profileChangeFromGeneLookup;
-
-    #profileTableBody;
-
     constructor ({
         dataStores,
         profileDetails,
@@ -41,37 +30,37 @@ export class ViewProfileUi {
 		},
         profileChangeFromGeneLookup
     }) {
-        this.#dataStores = dataStores;
-        this.#profileDetails = profileDetails;
-        this.#profileChangeFromGeneLookup = profileChangeFromGeneLookup;
+        this.dataStores = dataStores;
+        this.profileDetails = profileDetails;
+        this.profileChangeFromGeneLookup = profileChangeFromGeneLookup;
 
-        this.#profileTableBody = document.getElementById(profileTableBodyId);
+        this.profileTableBody = document.getElementById(profileTableBodyId);
     }
 
     renderTable () {
-        const geneIds = this.#dataStores.geneIdsStore.get();
+        const geneIds = this.dataStores.geneIdsStore.get();
         const profileChanges = geneIds
-            .map(geneId => this.#profileChangeFromGeneLookup[geneId])
+            .map(geneId => this.profileChangeFromGeneLookup[geneId])
             .filter(lookup => lookup !== undefined)
             .map(lookup => Object.entries(lookup))
             .flat();
 
-        this.#profileTableBody.innerHTML = '';
+        this.profileTableBody.innerHTML = '';
 
-        const firstRow = this.#profileTableBody.insertRow();
+        const firstRow = this.profileTableBody.insertRow();
     	const firstRowDescriptionCell = firstRow.insertCell(0)
     	firstRowDescriptionCell.appendChild(document.createTextNode("(base stats before modifiers)"));
-    	firstRow.insertCell(1).appendChild(document.createTextNode(`${this.#profileDetails.MOV}`));
-    	firstRow.insertCell(2).appendChild(document.createTextNode(`${this.#profileDetails.A}+`));
-    	firstRow.insertCell(3).appendChild(document.createTextNode(`${this.#profileDetails.SHO}+`));
-    	firstRow.insertCell(4).appendChild(document.createTextNode(`${this.#dataStores.creatureLevelStore.get()}`));
-    	firstRow.insertCell(5).appendChild(document.createTextNode(`${this.#profileDetails.DEF}+`));
-    	firstRow.insertCell(6).appendChild(document.createTextNode(`${this.#profileDetails.NERVE}+`));
-    	firstRow.insertCell(7).appendChild(document.createTextNode(`${this.#profileDetails.ESC}+`));
+    	firstRow.insertCell(1).appendChild(document.createTextNode(`${this.profileDetails.MOV}`));
+    	firstRow.insertCell(2).appendChild(document.createTextNode(`${this.profileDetails.A}+`));
+    	firstRow.insertCell(3).appendChild(document.createTextNode(`${this.profileDetails.SHO}+`));
+    	firstRow.insertCell(4).appendChild(document.createTextNode(`${this.dataStores.creatureLevelStore.get()}`));
+    	firstRow.insertCell(5).appendChild(document.createTextNode(`${this.profileDetails.DEF}+`));
+    	firstRow.insertCell(6).appendChild(document.createTextNode(`${this.profileDetails.NERVE}+`));
+    	firstRow.insertCell(7).appendChild(document.createTextNode(`${this.profileDetails.ESC}+`));
 
         const adjustedProfile = Object
-    		.entries(this.#profileDetails)
-    		.concat([['HP', this.#dataStores.creatureLevelStore.get()]])
+    		.entries(this.profileDetails)
+    		.concat([['HP', this.dataStores.creatureLevelStore.get()]])
             .reduce((adjustedProfile, [statName, startingStatValue]) => ({
     			...adjustedProfile,
     			[statName]: profileChanges
@@ -80,7 +69,7 @@ export class ViewProfileUi {
                     + startingStatValue
     		}), {});
 
-        const secondRow = this.#profileTableBody.insertRow();
+        const secondRow = this.profileTableBody.insertRow();
     	const secondRowDescriptionCell = secondRow.insertCell(0)
     	secondRowDescriptionCell.appendChild(document.createTextNode("(after modifiers)"));
     	secondRow.insertCell(1).appendChild(document.createTextNode(`${adjustedProfile.MOV}`));
