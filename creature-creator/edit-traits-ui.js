@@ -102,13 +102,19 @@ class EditTraitsUi {
 
 export class EditGenesUi extends EditTraitsUi {
 	constructor ({
+		dataStore,
+		traitDetail,
+		elementIds,
 		editGenesUiParams: {
 			actionAddedByGeneLookupDict,
 			actionIdsStore,
-		},
-		...params
+		}
 	}) {
-		super(params);
+		super({
+			dataStore,
+			traitDetail,
+			elementIds
+		});
 
 		this.actionIdsStore = actionIdsStore;
 		this.actionAddedByGeneLookupDict = actionAddedByGeneLookupDict;
@@ -143,13 +149,19 @@ export class EditGenesUi extends EditTraitsUi {
 
 export class EditActionsUi extends EditTraitsUi {
 	constructor ({
+		dataStore,
+		traitDetail,
+		elementIds,
 		editActionsUiParams: {
 			actionAddedByGeneLookupDict,
 			geneIdsStore,
-		},
-		...params
+		}
 	}) {
-		super(params);
+		super({
+			dataStore,
+			traitDetail,
+			elementIds
+		});
 
 		this.geneIdsStore = geneIdsStore;
 		this.actionAddedByGeneLookupDict = actionAddedByGeneLookupDict;

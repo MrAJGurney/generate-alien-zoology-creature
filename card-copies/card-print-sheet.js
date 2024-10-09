@@ -24,16 +24,19 @@ export class CardPrintSheet {
         const actionCardDetails = actionCardIdsStore.map(actionId => {
             const {id, name, prerequisite, effect, special} = this.cardData.actionCards.find(({id}) => actionId === id);
 
-            return {
+            const cardDetails = {
                 header: `Alien Creature Action Card (${id.toString().padStart(2, '0')})`,
                 title: name,
-                ...(prerequisite && {subtitle: prerequisite}),
                 body: effect
                     .split('\n')
                     .map(sentence => sentence.trim())
                     .filter(sentence => sentence.length > 0),
                 special
             }
+            if (prerequisite) {
+                cardDetails.subtitle = prerequisite;
+            }
+            return cardDetails;
         });
 
         return actionCardDetails;

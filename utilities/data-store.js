@@ -133,7 +133,7 @@ export class IdsStore extends DataStore {
         const encodedData = this.sharedDataCache.get(LOCK_SYMBOL, this.dataKey);
         const decodedData = this.decodeIds(encodedData);
 
-        return [...decodedData];
+        return decodedData;
     }
 
     add (ids) {

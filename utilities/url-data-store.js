@@ -5,7 +5,10 @@ export const readSearchParams = () => {
 
     const searchParamDict = Array
         .from(searchParams.entries())
-        .reduce((searchParamDict, [key, stringifiedValue]) => ({...searchParamDict, [key]: stringifiedValue}), {});
+        .reduce((searchParamDict, [key, stringifiedValue]) => {
+            searchParamDict[key] = stringifiedValue;
+            return searchParamDict;
+        }, {});
 
     return searchParamDict;
 }

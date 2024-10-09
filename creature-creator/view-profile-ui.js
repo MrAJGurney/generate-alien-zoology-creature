@@ -61,13 +61,13 @@ export class ViewProfileUi {
         const adjustedProfile = Object
     		.entries(this.profileDetails)
     		.concat([['HP', this.dataStores.creatureLevelStore.get()]])
-            .reduce((adjustedProfile, [statName, startingStatValue]) => ({
-    			...adjustedProfile,
-    			[statName]: profileChanges
+            .reduce((adjustedProfile, [statName, startingStatValue]) => {
+                adjustedProfile[statName] = profileChanges
                     .map(([statChangeName, statChangeValue]) => (statChangeName === statName) ? statChangeValue : 0)
                     .reduce((newStatTotal, statChange) => newStatTotal + statChange, 0)
-                    + startingStatValue
-    		}), {});
+                    + startingStatValue;
+                return adjustedProfile;
+            }, {});
 
         const secondRow = this.profileTableBody.insertRow();
     	const secondRowDescriptionCell = secondRow.insertCell(0)

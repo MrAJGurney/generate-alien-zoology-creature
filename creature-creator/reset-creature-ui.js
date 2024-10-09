@@ -45,11 +45,11 @@ export class ResetCreatureUi {
         const actionIds = [];
 
         while (actionIds.length < requiredActionCount) {
-            actionIds.push(newUniqueD50Roll([...actionIdsFromGenes, ...actionIds]));
+            actionIds.push(newUniqueD50Roll(actionIdsFromGenes.concat(actionIds)));
         }
 
         this.dataStores.geneIdsStore.replace(geneIds);
-        this.dataStores.actionIdsStore.replace([...actionIdsFromGenes, ...actionIds]);
+        this.dataStores.actionIdsStore.replace(actionIdsFromGenes.concat(actionIds));
 
         // saves for all tables
         this.dataStores.geneIdsStore.saveData();

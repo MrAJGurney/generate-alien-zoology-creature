@@ -16,20 +16,20 @@ export class ViewAndEditCreatureUi {
 				name: geneName,
 				id: geneId,
 				actionCard: {id: actionId}
-			}) => ({
-				...actionAddedByGeneLookup,
-				[geneId]: {
+			}) => {
+				actionAddedByGeneLookup[geneId] = {
 					actionId,
-					geneName,
-				}
-			}), {});
+					geneName
+				};
+				return actionAddedByGeneLookup;
+			}, {});
 
 		const profileChangeFromGeneLookup = details.geneDetails
 			.filter(({profile}) => profile)
-			.reduce((profileChangeFromGeneLookup, {id: geneId, profile}) => ({
-				...profileChangeFromGeneLookup,
-				[geneId]: profile
-			}), {});
+			.reduce((profileChangeFromGeneLookup, {id: geneId, profile}) => {
+				profileChangeFromGeneLookup[geneId] = [profile];
+				return profileChangeFromGeneLookup;
+			}, {});
 
 
 		// reset creature

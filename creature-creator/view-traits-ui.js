@@ -60,13 +60,21 @@ class ViewTraitsUi {
 
 export class ViewGenesUi extends ViewTraitsUi{
 	constructor ({
+		dataStore,
+		traitDetail,
+		elementIds,
+		renderOnlyPrintableColumns,
 		viewGenesUiParams: {
 			actionAddedByGeneLookupDict,
 			actionIdsStore
-		},
-		...params
+		}
 	}) {
-		super(params);
+		super({
+			dataStore,
+			traitDetail,
+			elementIds,
+			renderOnlyPrintableColumns
+		});
 
 		this.actionAddedByGeneLookupDict = actionAddedByGeneLookupDict;
 		this.actionIdsStore = actionIdsStore;
@@ -99,13 +107,21 @@ export class ViewGenesUi extends ViewTraitsUi{
 
 export class ViewActionsUi extends ViewTraitsUi {
 	constructor ({
+		dataStore,
+		traitDetail,
+		elementIds,
+		renderOnlyPrintableColumns,
 		viewActionsUiParams: {
 			actionAddedByGeneLookupDict,
 			geneIdsStore
-		},
-		...params
+		}
 	}) {
-		super(params);
+		super({
+			dataStore,
+			traitDetail,
+			elementIds,
+			renderOnlyPrintableColumns
+		});
 
 		this.actionAddedByGeneLookupDict = actionAddedByGeneLookupDict;
 		this.geneIdsStore = geneIdsStore;
