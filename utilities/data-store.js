@@ -24,7 +24,7 @@ export class SharedDataCache {
             throw new Error(`Invalid key: Key must me one of ${Object.values(this.dataKeys)}: ${key}`)
         }
 
-        const data = this.encodedCacheDict[key] ?? '';
+        const data = this.encodedCacheDict[key] ? this.encodedCacheDict[key] : '';
 
         return data;
     }
