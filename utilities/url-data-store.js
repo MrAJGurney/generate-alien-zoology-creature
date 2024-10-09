@@ -19,7 +19,9 @@ export const writeSearchParams = (searchParamDict) => {
     Object.keys(searchParamDict).forEach(key => assertIsString(key));
     Object.values(searchParamDict).forEach(value => assertIsString(value));
 
-    Object.entries(searchParamDict).forEach(([key, value]) => url.searchParams.set(key, value));
+    Array
+        .from(Object.entries(searchParamDict))
+        .forEach(([key, value]) => url.searchParams.set(key, value));
 
     window.history.pushState(null, '', url);
 }

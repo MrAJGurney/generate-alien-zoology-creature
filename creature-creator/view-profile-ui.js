@@ -42,7 +42,7 @@ export class ViewProfileUi {
         const profileChanges = geneIds
             .map(geneId => this.profileChangeFromGeneLookup[geneId])
             .filter(lookup => lookup !== undefined)
-            .map(lookup => Object.entries(lookup))
+            .map(lookup => Array.from(Object.entries(lookup)))
             .flat();
 
         this.profileTableBody.innerHTML = '';
