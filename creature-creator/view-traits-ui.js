@@ -137,13 +137,14 @@ export class ViewActionsUi extends ViewTraitsUi {
 		return immutableActionIds;
 	}
 
-	addCellsToRow (row, {id, name, effect }) {
+	addCellsToRow (row, {id, name, prerequisite, effect }) {
 		row.insertCell(0).appendChild(document.createTextNode(id));
 		row.insertCell(1).appendChild(document.createTextNode(name));
-		row.insertCell(2).appendChild(document.createTextNode(effect));
+		row.insertCell(2).appendChild(document.createTextNode(prerequisite !== undefined ? prerequisite : '-'));
+		row.insertCell(3).appendChild(document.createTextNode(effect));
 		if (!this.renderOnlyPrintableColumns) {
-			row.insertCell(3).appendChild(this.getDeleteRowButtonForTraitId(id));
-			row.insertCell(4).appendChild(document.createTextNode(
+			row.insertCell(4).appendChild(this.getDeleteRowButtonForTraitId(id));
+			row.insertCell(5).appendChild(document.createTextNode(
 				this.getImmutableTraitIds().includes(id)
 					? Object.values(this.actionAddedByGeneLookupDict).find(({actionId}) => actionId === id).geneName
 					: '-'
