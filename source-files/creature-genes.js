@@ -358,6 +358,7 @@ export const CREATURE_GENES = [
         description: "With strong roots anchored in the ground, this stocky creature moves as if in slow motion. ",
         effect: "The creature always has a MOV value of 1 (regardless of any modifiers from other genes). The creature has DEF -2 (e.g. DEF 6+ -> DEF 4+).",
         profile: {
+            MOV: 'SET_TO_ONE',
             DEF: -2
         }
     },

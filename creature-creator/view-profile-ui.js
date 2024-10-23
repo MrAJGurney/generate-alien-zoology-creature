@@ -1,3 +1,5 @@
+const SET_TO_ONE = 'SET_TO_ONE';
+
 export class NameAndLevelUi {
     constructor ({
         dataStores,
@@ -42,6 +44,7 @@ export class ViewProfileUi {
         const profileChanges = geneIds
             .map(geneId => this.profileChangeFromGeneLookup[geneId])
             .filter(lookup => lookup !== undefined)
+            .flat()
             .map(lookup => Array.from(Object.entries(lookup)))
             .flat();
 
@@ -68,6 +71,9 @@ export class ViewProfileUi {
                     + startingStatValue;
                 return adjustedProfile;
             }, {});
+
+        const profileOverrides = profileChanges.filter(([statChangeName, statChangeValue]) => statChangeValue === SET_TO_ONE);
+        profileOverrides.forEach(([statChangeName]) => adjustedProfile[statChangeName] = 1);
 
         const secondRow = this.profileTableBody.insertRow();
     	const secondRowDescriptionCell = secondRow.insertCell(0)
